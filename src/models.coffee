@@ -8,6 +8,9 @@
         duration: 0
 
     startTracking: ->
+        if @get 'active'
+            return
+
         vent.trigger 'task:started', @
         @set
             active: true
