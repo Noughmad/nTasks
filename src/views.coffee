@@ -298,7 +298,7 @@ class ProjectItemView extends Parse.View
         @model.bind 'change:selected', @selectedStateChanged
 
     render: =>
-        context = getJSON(@model)
+        context = @model.toJSON()
         if not @model.has 'selected'
             context['selected'] = false
         @$el.html @template(context)

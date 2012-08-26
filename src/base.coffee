@@ -5,9 +5,6 @@ MILI_PER_SECOND = 1000
 MILI_PER_MINUTE = MILI_PER_SECOND * 60
 MILI_PER_HOUR = MILI_PER_MINUTE * 60
 
-getJSON = (object) ->
-    object.toJSON()
-
 window.formatDuration = (miliseconds) ->
     hours = Math.floor(miliseconds / MILI_PER_HOUR)
     miliseconds -= hours * MILI_PER_HOUR
