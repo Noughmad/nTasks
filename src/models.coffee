@@ -21,14 +21,17 @@
 
         start = @get 'lastStart'
         end = new Date
-        units = @get 'units'
         duration = end - start
-        units.push {start: start, end: end, duration: duration}
+
         @set
             active: false
             lastStart: null
-            units: units
-            duration: @get('duration') + duration
+        @increment 'duration', duration
+        @add 'units',
+            start: start
+            end: end
+            duration: duration
+
         @save null
         vent.trigger 'task:stopped', @
         @unbind 'remove', null, @
