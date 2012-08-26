@@ -1,4 +1,4 @@
-jQuery ->
+    state = new State
 
     durationManager = new DurationManager
     vent.bind 'task:started', (task) ->
@@ -11,8 +11,8 @@ jQuery ->
 
     updateProjects = () ->
         query = new Parse.Query(Project)
-        query.equalTo 'user', Parse.User.getCurrentUser()
-        projects = new ProjectList query: query
+        query.equalTo 'user', Parse.User.current()
+        projects = new ProjectList null, {query: query}
 
     vent.bind 'user:currentChanged', () ->
         if Parse.User.current()
@@ -21,7 +21,7 @@ jQuery ->
         else
             projects = []
 
-    class AppRouter extends Backbone.Router
+    class AppRouter extends Parse.Router
         routes:
             "project/:id": 'showProject'
             "stats": 'showStats'
@@ -63,5 +63,5 @@ jQuery ->
     vent.bind "task:stopped", ->
         nav.showTask null
 
-    Backbone.history.start()
+    Parse.history.start()
 
