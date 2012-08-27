@@ -48,7 +48,7 @@
     router.bind "all", (route, router) ->
         nav.render()
 
-    vent.bind "project:selected", (project) ->
+    state.bind "change:selectedProject", (state, project) ->
         document.title = project.get('title') + ' - nTasks'
         app.showProject(project)
         router.navigate "/project/" + project.id

@@ -80,28 +80,14 @@
         initialize: ->
             _.bindAll @
             @model.bind 'remove', @unrender
-            @model.bind 'change:done', @updateCheckBox
-            @model.bind 'change:name', @render
+            @model.bind 'change', @render
             @model.bind 'change:active', @updateTrackingButtons
 
         render: ->
             @$el.html @template @model.toJSON()
             @hideEdits()
-            @updateCheckBox()
             @updateTrackingButtons()
             @
-
-        updateCheckBox: ->
-            if @model.get 'done'
-                @$el.addClass 'task-done'
-                @$('.status').html 'Done'
-                @$('.status').addClass 'label-success'
-                @$('.status').removeClass 'label-warning'
-            else
-                @$el.removeClass 'task-done'
-                @$('.status').html 'To-Do'
-                @$('.status').removeClass 'label-success'
-                @$('.status').addClass 'label-warning'
 
         updateTrackingButtons: ->
             if @model.get 'active'
@@ -117,6 +103,7 @@
             @$el.remove()
 
         remove: ->
+            @model.stopTracking()
             @model.destroy()
 
         setEditable: (editable) ->
@@ -152,13 +139,20 @@
                 name: name
             @model.save()
 
-        toggleDone: ->
-            @model.set 'done', @$('.toggle').is(':checked')
+        taskTodo: ->
+            @model.set 'status', TaskStatus.TODO
             @model.save()
+            false
 
-        toggleButtonClicked: ->
-            @model.set 'done', !@model.get 'done'
+        taskProgress: ->
+            @model.set 'status', TaskStatus.INPROGRESS
             @model.save()
+            false
+
+        taskDone: ->
+            @model.set 'status', TaskStatus.DONE
+            @model.save()
+            false
 
         events:
             'click .delete' : 'remove'
@@ -167,8 +161,9 @@
             'click .task-name' : 'showEdits'
             'click .cancel' : 'hideEdits'
             'submit .form-rename-task' : 'rename'
-            'change .toggle' : 'toggleDone'
-            'click .done-toggle' : 'toggleButtonClicked'
+            'click .status-todo' : 'taskTodo'
+            'click .status-progress' : 'taskProgress'
+            'click .status-done' : 'taskDone'
 
     class TaskListView extends Parse.View
         initialize: (options) ->
@@ -245,10 +240,7 @@
                 project: @project
                 user: Parse.User.current()
             console.log "Adding task " + name + " to project " + @project.get 'title'
-            task.save null,
-                success: (task) =>
-                    @tasks.fetch()
-                error: (task, error) =>
+            task.save()
             @$('#new-task-name').val("")
 
         events:
@@ -294,13 +286,10 @@
             _.bindAll @
             @model.bind 'change', @render
             @model.bind 'remove', @unrender
-            @model.bind 'change:selected', @selectedStateChanged
+            state.bind 'change:selectedProject', @selectedStateChanged
 
         render: =>
-            context = @model.toJSON()
-            if not @model.has 'selected'
-                context['selected'] = false
-            @$el.html @template(context)
+            @$el.html @template @model.toJSON()
             @
 
         unrender: =>
@@ -314,8 +303,8 @@
             @model.select()
             false
 
-        selectedStateChanged: ->
-            if @model.get 'selected'
+        selectedStateChanged: (state, project) ->
+            if project is @model
                 @$el.addClass 'active'
             else
                 @$el.removeClass 'active'
@@ -329,6 +318,8 @@
         template: _.template $('#navigation-bar-template').html()
 
         initialize: ->
+            _.bindAll @
+            state.bind 'change:activeTask', @showTask
             @task = null
             @render
 

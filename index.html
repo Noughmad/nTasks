@@ -26,11 +26,11 @@
       <span class="task-name"><%= name %></span>
     </td>
     <td>
-      <% if (done) { %>
-        <span class="status label label-success">Done</span>
-      <% } else { %>
-        <span class="status label label-warning">To-Do</span>
-      <% } %>
+      <div class="btn-group">
+        <a class="btn btn-mini status-todo <% if (status == TaskStatus.TODO) { %> btn-warning<% } %>" href="#">To-Do</a>
+        <a class="btn btn-mini status-progress<% if (status == TaskStatus.INPROGRESS) { %> btn-info<% } %>" href="#">In Progress</a>
+        <a class="btn btn-mini status-done<% if (status == TaskStatus.DONE) { %> btn-success<% } %>" href="#">Done</a>
+      </div>
     </td>
     <td>
       <span class="total-duration"><%= formatDuration(duration) %></span>

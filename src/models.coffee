@@ -2,21 +2,20 @@
         className: "Task"
 
         defaults:
-            done: false
             active: false
             units: []
             duration: 0
+            status: TaskStatus.TODO
 
         startTracking: ->
             if @get 'active'
                 return
 
-            vent.trigger 'task:started', @
             @set
                 active: true
                 lastStart: new Date
             @save null
-            @bind 'remove', -> vent.trigger 'task:stopped', @
+            state.set 'activeTask', @
 
         stopTracking: ->
             if not @get 'active'
@@ -35,23 +34,15 @@
                 end: end
                 duration: duration
 
-            @save null
-            vent.trigger 'task:stopped', @
-            @unbind 'remove', null, @
+            state.set 'activeTask', @
 
     class Project extends Parse.Object
         className: "Project"
         select: ->
-            @collection.selectProject @
+            state.set 'selectedProject', @
 
     class TaskList extends Parse.Collection
         model: Task
 
     class ProjectList extends Parse.Collection
         model: Project
-
-        selectProject: (project) ->
-            @selectedProject?.set 'selected', false
-            project.set 'selected', true
-            @selectedProject = project
-            vent.trigger 'project:selected', project

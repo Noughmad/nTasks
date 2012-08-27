@@ -7,6 +7,11 @@ jQuery ->
     MILI_PER_MINUTE = MILI_PER_SECOND * 60
     MILI_PER_HOUR = MILI_PER_MINUTE * 60
 
+    window.TaskStatus =
+        TODO: 0
+        INPROGRESS: 1
+        DONE: 2
+
     window.formatDuration = (miliseconds) ->
         hours = Math.floor(miliseconds / MILI_PER_HOUR)
         miliseconds -= hours * MILI_PER_HOUR
