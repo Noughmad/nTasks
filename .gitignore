@@ -2,6 +2,7 @@
 bootstrap
 js
 secret.coffee
+Secrets.java
 *.kdev4
 gen
 bin

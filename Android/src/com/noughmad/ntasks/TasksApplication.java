@@ -11,8 +11,7 @@ public class TasksApplication extends Application {
 	public void onCreate() {
 		super.onCreate();
 
-		// Add your initialization code here
-		Parse.initialize(this, Secrets.PARSE_APPLICATION_ID, Secrets.PARSE_ANDROID_KEY); 
+		Parse.initialize(this, Secrets.PARSE_APPLICATION_ID, Secrets.PARSE_ANDROID_KEY);
 
 		ParseACL defaultACL = new ParseACL();
 		defaultACL.setPublicReadAccess(false);
