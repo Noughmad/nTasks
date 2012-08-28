@@ -1,11 +1,11 @@
     state = new State
 
     durationManager = new DurationManager
-    vent.bind 'task:started', (task) ->
-        durationManager.updateTask task
-
-    vent.bind 'task:stopped', () ->
-        durationManager.clearTask
+    state.bind 'change:activeTask', (task) ->
+        if task
+            durationManager.updateTask task
+        else
+            durationManager.clearTask
 
     projects = []
 
@@ -14,7 +14,7 @@
         query.equalTo 'user', Parse.User.current()
         projects = new ProjectList null, {query: query}
 
-    vent.bind 'user:currentChanged', () ->
+    state.bind 'change:user', (user) ->
         if Parse.User.current()
             updateProjects()
             projects.fetch()

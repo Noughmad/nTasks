@@ -14,7 +14,7 @@
             @set
                 active: true
                 lastStart: new Date
-            @save null
+            @save()
             state.set 'activeTask', @
 
         stopTracking: ->
@@ -33,8 +33,9 @@
                 start: start
                 end: end
                 duration: duration
+            @save()
 
-            state.set 'activeTask', @
+            state.set 'activeTask', null
 
     class Project extends Parse.Object
         className: "Project"

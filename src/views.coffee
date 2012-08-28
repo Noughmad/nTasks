@@ -81,23 +81,16 @@
             _.bindAll @
             @model.bind 'remove', @unrender
             @model.bind 'change', @render
-            @model.bind 'change:active', @updateTrackingButtons
+            state.bind 'change:selectedTask', @render
+            @doShowActions = false
+            @render()
 
         render: ->
-            @$el.html @template @model.toJSON()
-            @hideEdits()
-            @updateTrackingButtons()
+            context = @model.toJSON()
+            context['selected'] = ((state.get 'selectedTask') is @)
+            context['showActions'] = @doShowActions
+            @$el.html @template context
             @
-
-        updateTrackingButtons: ->
-            if @model.get 'active'
-                @$('.start-tracking').hide()
-                @$('.stop-tracking').show()
-                @$el.addClass 'info'
-            else
-                @$('.start-tracking').show()
-                @$('.stop-tracking').hide()
-                @$el.removeClass 'info'
 
         unrender: ->
             @$el.remove()
@@ -106,38 +99,28 @@
             @model.stopTracking()
             @model.destroy()
 
-        setEditable: (editable) ->
-            @editable = editable
-            if @editable
-                @$('.task-editable').show()
-                @$('.task-normal').hide()
-                @$('.start-tracking').removeClass('btn-mini')
-                @$('.start-tracking').addClass('btn-primary')
-            else
-                @$('.task-editable').hide()
-                @$('.task-normal').show()
-                @$('.start-tracking').addClass('btn-mini')
-                @$('.start-tracking').removeClass('btn-primary')
-
         start: ->
             @model.startTracking()
 
         stopTracking: ->
             @model.stopTracking()
 
-        showEdits: ->
-            @setEditable true
+        select: ->
+            state.set 'selectedTask', @
+            false
 
-        hideEdits: ->
-            @setEditable false
+        unselect: ->
+            if state.get 'selectedTask' is @
+                state.set 'selectedTask', null
+            false
 
-        rename: ->
+        saveForm: ->
             name = @$('.task-name-edit').val()
-            if not name or name == @model.get 'name'
-                return
-            @model.set
-                name: name
-            @model.save()
+            if name
+                if name != @model.get 'name'
+                    @model.set 'name', name
+                    @model.save()
+                state.set 'selectedTask', null
 
         taskTodo: ->
             @model.set 'status', TaskStatus.TODO
@@ -154,13 +137,25 @@
             @model.save()
             false
 
+        showActions: ->
+            @doShowActions = true
+            @render()
+            false
+
+        hideActions: ->
+            @doShowActions = false
+            @render
+            false
+
         events:
+            'mouseenter' : 'showActions'
+            'mouseleave' : 'hideActions'
             'click .delete' : 'remove'
             'click .start-tracking' : 'start'
             'click .stop-tracking' : 'stopTracking'
-            'click .task-name' : 'showEdits'
-            'click .cancel' : 'hideEdits'
-            'submit .form-rename-task' : 'rename'
+            'click .task-name' : 'select'
+            'click .cancel' : 'unselect'
+            'submit .form-edit-task' : 'saveForm'
             'click .status-todo' : 'taskTodo'
             'click .status-progress' : 'taskProgress'
             'click .status-done' : 'taskDone'
@@ -198,8 +193,10 @@
                     </tbody>
                 </table>
                 <form class="form form-inline form-new-task">
-                    <input type="text" id="new-task-name" placeholder="New Task Name">
-                    <button type="submit" class="btn">Add Task</button>
+                    <div class="input-append">
+                        <input type="text" id="new-task-name" placeholder="New Task Name">
+                        <button type="submit" class="btn">Add Task</button>
+                    </div>
                 </form>
             """
             @showCompleted()
@@ -337,7 +334,7 @@
 
         logOut: ->
             Parse.User.logOut()
-            vent.trigger "user:currentChanged"
+            state.set 'user', null
 
         showTask: (task) ->
             @task = task
@@ -386,7 +383,7 @@
 
             Parse.User.logIn username, password,
                 success: (user) ->
-                    vent.trigger "user:currentChanged"
+                    state.set 'user', user
                 error: (user, error) =>
                     @$(".login-form .error").html("Invalid username or password. Please try again.").show()
                     @$(".login-form button").removeAttr("disabled")
@@ -400,7 +397,7 @@
 
             Parse.User.signUp username, password, { ACL: new Parse.ACL() },
                 success: (user) ->
-                    vent.trigger "user:currentChanged"
+                    state.set 'user', user
                 error: (user, error) =>
                     @$(".signup-form .error").html(error.message).show()
                     @$(".signup-form button").removeAttr("disabled")

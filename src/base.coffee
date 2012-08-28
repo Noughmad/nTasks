@@ -1,8 +1,5 @@
 jQuery ->
 
-    vent = {}
-    _.extend vent, Backbone.Events
-
     MILI_PER_SECOND = 1000
     MILI_PER_MINUTE = MILI_PER_SECOND * 60
     MILI_PER_HOUR = MILI_PER_MINUTE * 60
@@ -54,3 +51,4 @@ jQuery ->
 
     class State extends Parse.Object
         className: "JSAppState"
+        
