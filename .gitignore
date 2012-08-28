@@ -3,3 +3,6 @@ bootstrap
 js
 secret.coffee
 *.kdev4
+gen
+bin
+*.jar

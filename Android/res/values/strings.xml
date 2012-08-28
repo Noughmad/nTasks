@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="hello">Hello World, ParseStarterProjectActivity!</string>
+    <string name="app_name">nTasks</string>
+    <string name="username">User name</string>
+    <string name="password">Password</string>
+    <string name="login">Log In</string>
+    <string name="register">Register</string>
+    <string name="menu_save">Save</string>
+    <string name="menu_search">Search</string>
+    <string name="menu_logout">Logout</string>
+    <string name="email">Email address</string>
+    <string name="search_hint">Search tasks</string>
+    <string name="search_description">Tasks</string>
+    <string name="project_icon">Project icon</string>
+    <string name="no_projects">Congratulations, you have nothing to do!</string>
+    <string name="add_project">New project</string>
+    <string name="add_task">New task</string>
+    <string name="project_name">Project name</string>
+    <string name="project_description">Project description</string>
+    <string name="project_client">Client</string>
+</resources>
