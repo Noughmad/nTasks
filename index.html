@@ -44,7 +44,7 @@
       <span class="total-duration"><%= formatDuration(duration) %></span>
     </td>
     <td>
-      <div class="btn-group">
+      <div class="btn-group task-actions">
         <% if (active) { %>
           <a class="btn btn-danger stop-tracking">Stop</a>
         <% } else { %>
@@ -160,6 +160,46 @@
           </div>
         </fieldset>
       </form>
+    </div>
+  </script>
+
+  <script type="text/html" id="task-list-template">
+    <div class="page-header">
+      <h1><%= title %></h1>
+    </div>
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <td>Status</td>
+          <td>Task Name</td>
+          <td>Time Spent</td>
+          <td></td>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+    <form class="form form-inline form-new-task">
+      <div class="input-append">
+        <input type="text" id="new-task-name" placeholder="New Task Name">
+        <button type="submit" class="btn">Add Task</button>
+      </div>
+    </form>
+  </script>
+
+  <script type="text/html" id="delete-dialog-template">
+    <div class="modal hide" id="confirm-delete-dialog">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h3>Really delete <%= title %>?</h3>
+      </div>
+      <div class="modal-body">
+        <p>This cannot be undone</p>
+      </div>
+      <div class="modal-footer">
+        <a class="btn cancel" data-dismiss="modal">Cancel</a>
+        <a class="btn btn-danger delete">Delete</a>
+      </div>
     </div>
   </script>
 

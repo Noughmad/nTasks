@@ -1,5 +1,6 @@
     class ConfirmDeleteDialog extends Parse.View
         tagName: 'div'
+        template: _.template $('#delete-dialog-template').html()
 
         initialize: (options) ->
             @model = options.model
@@ -13,21 +14,7 @@
             @hide()
 
         render: ->
-            dialog = $("""
-                <div class="modal hide" id="confirm-delete-dialog">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        <h3>Really delete #{@model.get 'title'}?</h3>
-                    </div>
-                    <div class="modal-body">
-                        <p>This cannot be undone</p>
-                    </div>
-                    <div class="modal-footer">
-                        <a class="btn cancel" data-dismiss="modal">Cancel</a>
-                        <a class="btn btn-danger delete">Delete</a>
-                    </div>
-                </div>
-            """)
+            dialog = $ @template @model.toJSON()
             @el = dialog.modal 'keyboard': true, 'backdrop': true
             @$el = $(@el)
             @delegateEvents()
@@ -138,13 +125,11 @@
             false
 
         showActions: ->
-            @doShowActions = true
-            @render()
+            @$('.task-actions').hide('fast')
             false
 
         hideActions: ->
-            @doShowActions = false
-            @render
+            @$('.task-actions').show('fast')
             false
 
         events:
@@ -161,6 +146,8 @@
             'click .status-done' : 'taskDone'
 
     class TaskListView extends Parse.View
+        template: _.template $('#task-list-template').html()
+    
         initialize: (options) ->
             _.bindAll @
             @project = options.project
@@ -176,29 +163,7 @@
 
         render: ->
             console.log 'Rendering task list for ' + @project.get 'title'
-            @$el.html """
-                <div class="page-header">
-                    <h1>#{@project.get 'title'}</h1>
-                </div>
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <td>Status</td>
-                            <td>Task Name</td>
-                            <td>Time Spent</td>
-                            <td></td>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-                <form class="form form-inline form-new-task">
-                    <div class="input-append">
-                        <input type="text" id="new-task-name" placeholder="New Task Name">
-                        <button type="submit" class="btn">Add Task</button>
-                    </div>
-                </form>
-            """
+            @$el.html @template @project.toJSON()
             @showCompleted()
             @
 
