@@ -464,32 +464,17 @@
 
         initialize: ->
             _.bindAll @
-            @bind "user:currentChanged", =>
-                @render()
+            state.bind 'change:tab', render
             @view = null
             @task_list = null
             @render()
 
         render: ->
-            @showTasks()
-            @
-
-        showTasks: ->
-            if @view
-                @view.undelegateEvents()
-                delete @view
-
-            if Parse.User.current()
+            t = state.get 'tab'
+            if t is TAB_LOGIN
+                @view = new LogInView
+            else if t is TAB_TASKS
                 @view = new ManageTasksView
-            else
-                @view = new LogInView
-
-        showStats: ->
-            if @view
-                @view.undelegateEvents()
-                delete @view
-
-            if Parse.User.current()
+            else if t is TAB_STATS
                 @view = new StatsView
-            else
-                @view = new LogInView
+            @

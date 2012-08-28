@@ -49,6 +49,15 @@ jQuery ->
             $('.task-current-duration').html formatDuration currentDuration
             $('.task-' + @task.id + '-total-duration').html formatDuration currentDuration + @task.get 'duration'
 
+    TAB_LOGIN = 0
+    TAB_TASKS = 1
+    TAB_STATS = 2
+    TAB_REPORT = 3
+
     class State extends Parse.Object
         className: "JSAppState"
-        
+        setTab: (tab) ->
+            if Parse.User.current()
+                @set 'tab', tab
+            else
+                @set 'tab', TAB_LOGIN

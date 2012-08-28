@@ -28,16 +28,16 @@
             "*actions": 'index'
 
         index: (actions) ->
-            console.log "Showing index " + actions
-            app.showTasks()
+            state.setTab TAB_TASKS
 
         showProject: (id) =>
             project = projects.get id
             if project
+                state.setTab TAB_TASKS
                 project.select()
 
         showStats: ->
-            app.showStats()
+            state.setTab TAB_STATS
 
     Parse.initialize(PARSE_APPLICATION_ID, PARSE_JAVASCRIPT_KEY)
 
