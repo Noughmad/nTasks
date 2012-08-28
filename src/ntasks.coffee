@@ -53,15 +53,12 @@
         app.showProject(project)
         router.navigate "/project/" + project.id
 
-    vent.bind "user:currentChanged", ->
+    state.bind "change:user", ->
         nav.render()
         app.render()
 
-    vent.bind "task:started", (task) ->
+    state.bind "change:activeTask", (task) ->
         nav.showTask task
-
-    vent.bind "task:stopped", ->
-        nav.showTask null
 
     Parse.history.start()
 
