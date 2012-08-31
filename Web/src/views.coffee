@@ -68,6 +68,7 @@
             _.bindAll @
             @model.bind 'remove', @unrender
             @model.bind 'change', @render
+            @model.bind 'change:active', @updateActive
             state.bind 'change:selectedTask', @render
             @doShowActions = false
             @render()
@@ -88,9 +89,17 @@
 
         start: ->
             @model.startTracking()
+            false
 
         stopTracking: ->
             @model.stopTracking()
+            false
+
+        updateActive: ->
+            if @model.get 'active'
+                @$el.addClass 'info'
+            else
+                @$el.removeClass 'info'
 
         select: ->
             state.set 'selectedTask', @
@@ -109,6 +118,11 @@
                     @model.save()
                 state.set 'selectedTask', null
 
+        taskUrgent: ->
+            @model.set 'status', TaskStatus.URGENT
+            @model.save()
+            false
+
         taskTodo: ->
             @model.set 'status', TaskStatus.TODO
             @model.save()
@@ -125,11 +139,12 @@
             false
 
         showActions: ->
-            @$('.task-actions').hide('fast')
+            if not @model.get 'active'
+                @$('.start-tracking').addClass 'btn-primary'
             false
 
         hideActions: ->
-            @$('.task-actions').show('fast')
+            @$('.start-tracking').removeClass 'btn-primary'
             false
 
         events:
@@ -141,6 +156,7 @@
             'click .task-name' : 'select'
             'click .cancel' : 'unselect'
             'submit .form-edit-task' : 'saveForm'
+            'click .status-urgent' : 'taskUrgent'
             'click .status-todo' : 'taskTodo'
             'click .status-progress' : 'taskProgress'
             'click .status-done' : 'taskDone'
@@ -154,6 +170,7 @@
 
             query = new Parse.Query(Task)
             query.equalTo "project", @project
+            query.ascending "status"
             @tasks = query.collection()
             @tasks.bind 'add', @appendTask
             @tasks.bind 'reset', @resetTasks
@@ -202,6 +219,7 @@
                 project: @project
                 user: Parse.User.current()
             console.log "Adding task " + name + " to project " + @project.get 'title'
+            @tasks.add task
             task.save()
             @$('#new-task-name').val("")
 
@@ -300,6 +318,7 @@
         logOut: ->
             Parse.User.logOut()
             state.set 'user', null
+            false
 
         showTask: (task) ->
             @task = task
@@ -312,6 +331,7 @@
         stopTracking: ->
             if @task
                 @task.stopTracking()
+            false
 
 
     class ManageTasksView extends Parse.View
@@ -429,17 +449,14 @@
 
         initialize: ->
             _.bindAll @
-            state.bind 'change:tab', render
+            state.bind 'change:tab', @render
             @view = null
             @task_list = null
             @render()
 
         render: ->
-            t = state.get 'tab'
-            if t is TAB_LOGIN
-                @view = new LogInView
-            else if t is TAB_TASKS
-                @view = new ManageTasksView
-            else if t is TAB_STATS
-                @view = new StatsView
+            switch state.get 'tab'
+                when TAB_LOGIN then @view = new LogInView
+                when TAB_TASKS then @view = new ManageTasksView
+                when TAB_STATS then @view = new StatsView
             @

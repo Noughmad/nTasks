@@ -11,6 +11,10 @@
             if @get 'active'
                 return
 
+            currentTask = state.get 'activeTask'
+            if currentTask
+                currentTask.stopTracking()
+
             @set
                 active: true
                 lastStart: new Date

@@ -1,13 +1,13 @@
     state = new State
 
     durationManager = new DurationManager
-    state.bind 'change:activeTask', (task) ->
+    state.bind 'change:activeTask', (state, task) ->
         if task
             durationManager.updateTask task
         else
             durationManager.clearTask
 
-    projects = []
+    projects = null
 
     updateProjects = () ->
         query = new Parse.Query(Project)
@@ -31,10 +31,15 @@
             state.setTab TAB_TASKS
 
         showProject: (id) =>
+            state.setTab TAB_TASKS
             project = projects.get id
             if project
-                state.setTab TAB_TASKS
-                project.select()
+                projects.select()
+            else
+                projects.bind 'reset', (projects) ->
+                    project = projects.get id
+                    if project
+                        project.select()
 
         showStats: ->
             state.setTab TAB_STATS
@@ -57,8 +62,7 @@
         nav.render()
         app.render()
 
-    state.bind "change:activeTask", (task) ->
+    state.bind "change:activeTask", (state, task) ->
         nav.showTask task
 
     Parse.history.start()
-

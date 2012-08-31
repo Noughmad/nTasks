@@ -4,8 +4,9 @@
   <meta charset="utf-8">
   <title>nTasks</title>
   <meta name="description" content="">
-
+  
   <link rel="stylesheet" href="bootstrap/css/bootstrap.css">
+  <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="js/jqplot/jquery.jqplot.css">
 
   <!-- TODO: Change all http:// URLs to use protocol-relative urls (without "http:") !-->
@@ -33,25 +34,41 @@
         <span class="task-name"><%= name %></span>
       <% } %>
     </td>
+    
     <td>
       <div class="btn-group">
+        <a class="btn btn-mini btn-<%= statusClass(status) %> dropdown-toggle task-status" data-toggle="dropdown" href="#">
+          <%= statusString(status) %>
+          <span class="caret"></span>
+        </a>
+        <ul class="dropdown-menu">
+          <li><a href="#" class="danger status-urgent">Urgent</a></li>
+          <li><a href="#" class="warning status-todo">To-Do</a></li>
+          <li><a href="#" class="info status-progress">In Progress</a></li>
+          <li><a href="#" class="success status-done">Done</a></li>
+        </ul>
+    </div>
+      <!--
+      <div class="btn-group task-status">
+        <a class="btn btn-mini status-urgent <% if (status == TaskStatus.URGENT) { %> btn-danger<% } %>" href="#">Urgent</a>
         <a class="btn btn-mini status-todo <% if (status == TaskStatus.TODO) { %> btn-warning<% } %>" href="#">To-Do</a>
         <a class="btn btn-mini status-progress<% if (status == TaskStatus.INPROGRESS) { %> btn-info<% } %>" href="#">In Progress</a>
         <a class="btn btn-mini status-done<% if (status == TaskStatus.DONE) { %> btn-success<% } %>" href="#">Done</a>
+      </div>
+      !-->
+    </td>
+    <td>
+      <div class="btn-group task-actions">
+        <a class="btn btn-mini start-tracking" href="#">Start</a>
+        <a class="btn btn-mini stop-tracking <% if (active) { %> btn-danger<% } %>" href="#">Stop</a>\
+        <a class="btn btn-mini task-details" href="#">Details</a>
       </div>
     </td>
     <td>
       <span class="total-duration"><%= formatDuration(duration) %></span>
     </td>
     <td>
-      <div class="btn-group task-actions">
-        <% if (active) { %>
-          <a class="btn btn-danger stop-tracking">Stop</a>
-        <% } else { %>
-          <a class="btn btn-info start-tracking">Start</a>
-        <% } %>
-        <a class="btn btn-mini show-details">Details</a>
-      </div>
+
     </td>
   </script>
 
@@ -170,10 +187,10 @@
     <table class="table table-hover">
       <thead>
         <tr>
-          <td>Status</td>
-          <td>Task Name</td>
-          <td>Time Spent</td>
-          <td></td>
+          <th>Task Name</th>
+          <th>Status</th>
+          <th>Time Tracking</th>
+          <th>Time Spent</th>
         </tr>
       </thead>
       <tbody>

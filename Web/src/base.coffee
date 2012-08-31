@@ -5,9 +5,24 @@ jQuery ->
     MILI_PER_HOUR = MILI_PER_MINUTE * 60
 
     window.TaskStatus =
-        TODO: 0
-        INPROGRESS: 1
-        DONE: 2
+        URGENT: 1
+        TODO: 3
+        INPROGRESS: 5
+        DONE: 7
+
+    window.statusString = (status) ->
+        switch status
+            when TaskStatus.TODO then "To-Do"
+            when TaskStatus.INPROGRESS then "In Progress"
+            when TaskStatus.DONE then "Done"
+            when TaskStatus.URGENT then "Urgent"
+
+    window.statusClass = (status) ->
+        switch status
+            when TaskStatus.TODO then "warning"
+            when TaskStatus.INPROGRESS then "info"
+            when TaskStatus.DONE then "success"
+            when TaskStatus.URGENT then "danger"
 
     window.formatDuration = (miliseconds) ->
         hours = Math.floor(miliseconds / MILI_PER_HOUR)
@@ -33,6 +48,7 @@ jQuery ->
 
     class DurationManager
         updateTask: (task) ->
+            console.log task
             @clearTask()
             if task
                 @task = task
@@ -43,7 +59,7 @@ jQuery ->
                 clearInterval @interval
             @task = null
 
-        updateDuration: ->
+        updateDuration: =>
             end = new Date
             currentDuration = end - @task.get 'lastStart'
             $('.task-current-duration').html formatDuration currentDuration
