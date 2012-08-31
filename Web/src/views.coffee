@@ -119,22 +119,20 @@
                 state.set 'selectedTask', null
 
         taskUrgent: ->
-            @model.set 'status', TaskStatus.URGENT
-            @model.save()
-            false
+            @setTaskStatus TaskStatus.URGENT
 
         taskTodo: ->
-            @model.set 'status', TaskStatus.TODO
-            @model.save()
-            false
+            @setTaskStatus TaskStatus.TODO
 
         taskProgress: ->
-            @model.set 'status', TaskStatus.INPROGRESS
-            @model.save()
-            false
+            @setTaskStatus TaskStatus.INPROGRESS
 
         taskDone: ->
-            @model.set 'status', TaskStatus.DONE
+            @setTaskStatus TaskStatus.DONE
+
+        setTaskStatus: (status) ->
+            @model.set 'status', status
+            @model.collection.sort()
             @model.save()
             false
 
@@ -172,6 +170,8 @@
             query.equalTo "project", @project
             query.ascending "status"
             @tasks = query.collection()
+            @tasks.comparator = (task) ->
+                task.get 'status'
             @tasks.bind 'add', @appendTask
             @tasks.bind 'reset', @resetTasks
             @tasks.fetch()
