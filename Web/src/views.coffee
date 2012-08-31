@@ -132,7 +132,6 @@
 
         setTaskStatus: (status) ->
             @model.set 'status', status
-            @model.collection.sort()
             @model.save()
             false
 
@@ -163,15 +162,12 @@
         template: _.template $('#task-list-template').html()
     
         initialize: (options) ->
-            _.bindAll @
             @project = options.project
+            _.bindAll @
 
             query = new Parse.Query(Task)
             query.equalTo "project", @project
-            query.ascending "status"
             @tasks = query.collection()
-            @tasks.comparator = (task) ->
-                task.get 'status'
             @tasks.bind 'add', @appendTask
             @tasks.bind 'reset', @resetTasks
             @tasks.fetch()
@@ -208,7 +204,7 @@
             @$('tbody').html("");
             @tasks.each(@appendTask);
 
-        addTask: ->
+        addTask: =>
             name = @$('#new-task-name').val()
             if not name
                 return
@@ -442,6 +438,7 @@
     class AppView extends Parse.View
         showProject: (project) ->
             if @task_list
+                @task_list.undelegateEvents()
                 delete @task_list
             @task_list = new TaskListView
                 el: $ "#task-list"
