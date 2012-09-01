@@ -3,6 +3,7 @@ jQuery ->
     MILI_PER_SECOND = 1000
     MILI_PER_MINUTE = MILI_PER_SECOND * 60
     MILI_PER_HOUR = MILI_PER_MINUTE * 60
+    MILI_PER_DAY = MILI_PER_HOUR * 24
 
     window.TaskStatus =
         URGENT: 1

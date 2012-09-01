@@ -67,9 +67,6 @@
     <td>
       <span class="total-duration"><%= formatDuration(duration) %></span>
     </td>
-    <td>
-
-    </td>
   </script>
 
   <script type="text/template" id="project-item-template">
@@ -187,10 +184,10 @@
     <table class="table table-hover">
       <thead>
         <tr>
-          <th>Task Name <i class="icon-chevron-down"></i></th>
-          <th>Status <i class="icon-chevron-down"></i></th>
-          <th>Time Tracking</th>
-          <th>Time Spent <i class="icon-chevron-down"></i></th>
+          <th class="sort-name sort-name-asc">Task Name <i class="icon-chevron-down"></i></th>
+          <th class="sort-status sort-status-asc">Status <i class="icon-chevron-down"></i></th>
+          <th></th>
+          <th class="sort-duration sort-duration-asc">Time Spent <i class="icon-chevron-down"></i></th>
         </tr>
       </thead>
       <tbody>

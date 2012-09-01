@@ -72,6 +72,7 @@
             state.bind 'change:selectedTask', @render
             @doShowActions = false
             @render()
+            @updateActive()
 
         render: ->
             context = @model.toJSON()
@@ -219,10 +220,64 @@
             task.save()
             @$('#new-task-name').val("")
 
+        sort: (field, descending) ->
+            header = @$('.sort-' + field)
+            icon = @$('.sort-' + field + ' i')
+
+            header_asc = 'sort-' + field + '-asc'
+            header_desc = 'sort-' + field + '-desc'
+            icon_asc = 'icon-chevron-down'
+            icon_desc = 'icon-chevron-up'
+
+            if descending
+                @tasks.comparator = (one, two) ->
+                    if one.get(field) > two.get(field)
+                        return -1
+                    else if one.get(field) < two.get(field)
+                        return 1
+                    else
+                        return 0
+                header.removeClass header_desc
+                header.addClass header_asc
+                icon.removeClass icon_desc
+                icon.addClass icon_asc
+            else
+                @tasks.comparator = (task) ->
+                    task.get field
+                header.removeClass header_asc
+                header.addClass header_desc
+                icon.removeClass icon_asc
+                icon.addClass icon_desc
+            @tasks.sort()
+
+        sortNameAscending: ->
+            @sort 'name', false
+
+        sortNameDescending: ->
+            @sort 'name', true
+
+        sortStatusAscending: ->
+            @sort 'status', false
+
+        sortStatusDescending: ->
+            @sort 'status', true
+
+        sortDurationAscending: ->
+            @sort 'duration', false
+
+        sortDurationDescending: ->
+            @sort 'duration', true
+
         events:
             'submit .form-new-task' : 'addTask'
             'click .toggle-show-done' : 'toggleCompleted'
-
+            'click .sort-name-asc' : 'sortNameAscending'
+            'click .sort-name-desc' : 'sortNameDescending'
+            'click .sort-status-asc' : 'sortStatusAscending'
+            'click .sort-status-desc' : 'sortStatusDescending'
+            'click .sort-duration-asc' : 'sortDurationAscending'
+            'click .sort-duration-desc' : 'sortDurationDescending'
+            
     class ProjectListView extends Parse.View
         initialize: ->
             _.bindAll @
