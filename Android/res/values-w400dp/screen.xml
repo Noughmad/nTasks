@@ -1,0 +1,5 @@
+<resources>
+    <bool name="task_item_show_duration">
+        true
+    </bool>
+</resources>

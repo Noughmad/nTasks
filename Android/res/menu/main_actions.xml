@@ -5,9 +5,15 @@
           android:title="@string/menu_search"
           android:showAsAction="ifRoom|collapseActionView"
           android:actionViewClass="com.noughmad.ntasks.QuickTaskView" />
+
+    <item android:id="@+id/menu_add_project"
+          android:icon="@android:drawable/ic_menu_add"
+          android:title="@string/add_project"
+          android:showAsAction="ifRoom" />
     
     <item android:id="@+id/menu_logout"
           android:icon="@android:drawable/ic_lock_power_off"
           android:title="@string/menu_logout"
-          android:showAsAction="ifRoom|withText" />
+          android:showAsAction="ifRoom" />
+          
 </menu>

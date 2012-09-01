@@ -1,80 +1,72 @@
 package com.noughmad.ntasks;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.EditText;
 
-import com.parse.GetCallback;
-import com.parse.ParseException;
 import com.parse.ParseObject;
-import com.parse.ParseQuery;
 import com.parse.ParseUser;
 
 
 public class ProjectDialogFragment extends DialogFragment {
 
 	private ParseObject mProject;
+
+	public static ProjectDialogFragment create(ParseObject project) {
+		ProjectDialogFragment dialog = new ProjectDialogFragment();
+		dialog.mProject = project;
+		return dialog;
+	}
+	
+	public static ProjectDialogFragment create() {
+		return create(null);
+	}
 	
 	@Override
-    public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		String id = null;
-		if (getArguments() != null) {
-			id = getArguments().getString("project");
-		}
-		if (id == null) {
-			mProject = null;
+	public Dialog onCreateDialog(Bundle savedInstanceState) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+		
+		builder.setIcon(R.drawable.ic_launcher);
+		
+		final View view = getActivity().getLayoutInflater().inflate(
+				R.layout.project_dialog, 
+				(ViewGroup)getActivity().findViewById(R.id.project_dialog_layout)
+		);
+		
+		if (mProject != null) {
+			((EditText)view.findViewById(R.id.project_title)).setText(mProject.getString("title"));
+			((EditText)view.findViewById(R.id.project_client)).setText(mProject.getString("client"));
+			
+			builder.setTitle(mProject.getString("title"));
 		} else {
-			ParseQuery query = new ParseQuery("Project");
-			query.setCachePolicy(ParseQuery.CachePolicy.CACHE_ELSE_NETWORK);
-			query.getInBackground(id, new GetCallback() {
-
-				@Override
-				public void done(ParseObject project, ParseException e) {
-					if (e == null) {
-						mProject = project;
-						
-						View v = getView();
-						if (v != null) {
-							((EditText)v.findViewById(R.id.project_name)).setText(project.getString("name"));
-							((EditText)v.findViewById(R.id.project_description)).setText(project.getString("description"));
-						}
-					} else {
-						mProject = null;
-					}
-				}});
+			builder.setTitle(R.string.add_project);
 		}
-	}
-
-	@Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.project_dialog, container, false);
-            
-        // Watch for button clicks.
-        Button button = (Button)view.findViewById(R.id.button_ok);
-        button.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-            	if (mProject == null) {
+		
+		builder.setView(view);
+		builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {		
+			public void onClick(DialogInterface dialog, int which) {
+				String title = ((EditText)view.findViewById(R.id.project_title)).getText().toString();
+				if (title.isEmpty()) {
+					return;
+				}
+				if (mProject == null) {
             		mProject = new ParseObject("Project");
             		mProject.put("user", ParseUser.getCurrentUser());
             	}
-        		mProject.put("name", ((EditText)view.findViewById(R.id.project_name)).getText().toString());
-        		mProject.put("description", ((EditText)view.findViewById(R.id.project_description)).getText().toString());
+        		mProject.put("title", title);
+        		mProject.put("client", ((EditText)view.findViewById(R.id.project_client)).getText().toString());
         		mProject.saveEventually();
-        		dismiss();
-            }
-        });
-        
-        if (mProject != null) {
-        	((EditText)view.findViewById(R.id.project_name)).setText(mProject.getString("name"));
-			((EditText)view.findViewById(R.id.project_description)).setText(mProject.getString("description"));
-        }
-
-        return view;
-    }
+			}
+		});
+		builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.cancel();
+			}
+		});
+		return builder.create();
+	}
 }

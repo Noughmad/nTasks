@@ -19,4 +19,10 @@
     <string name="project_name">Project name</string>
     <string name="project_description">Project description</string>
     <string name="project_client">Client</string>
+    <string-array name="task_status_array">
+        <item>Urgent</item>
+        <item>To-Do</item>
+        <item>In Progress</item>
+        <item>Done</item>
+    </string-array>
 </resources>

@@ -6,10 +6,10 @@ jQuery ->
     MILI_PER_DAY = MILI_PER_HOUR * 24
 
     window.TaskStatus =
-        URGENT: 1
-        TODO: 3
-        INPROGRESS: 5
-        DONE: 7
+        URGENT: 0
+        TODO: 1
+        INPROGRESS: 2
+        DONE: 3
 
     window.statusString = (status) ->
         switch status

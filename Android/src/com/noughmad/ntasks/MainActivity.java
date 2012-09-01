@@ -67,6 +67,18 @@ public class MainActivity extends Activity {
 			
 		case R.id.menu_search:
 			break;
+			
+		case R.id.menu_add_project:
+			FragmentTransaction ft = getFragmentManager().beginTransaction();
+		    Fragment prev = getFragmentManager().findFragmentByTag("project-dialog");
+		    if (prev != null) {
+		        ft.remove(prev);
+		    }
+		    ft.addToBackStack(null);
+
+		    // Create and show the dialog.
+		    ProjectDialogFragment newFragment = ProjectDialogFragment.create();
+		    newFragment.show(ft, "project-dialog");
 		}
 		return true;
 	}

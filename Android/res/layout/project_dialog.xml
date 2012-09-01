@@ -1,10 +1,11 @@
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/project_dialog_layout"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent" >
 
         <EditText
-            android:id="@+id/project_name"
+            android:id="@+id/project_title"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/project_name"
@@ -17,33 +18,9 @@
             android:id="@+id/project_client"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/project_name"
+            android:layout_below="@id/project_title"
             android:hint="@string/project_client"
             android:ems="10" >
         </EditText>
         
-        <EditText
-            android:id="@+id/project_description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/project_client"
-            android:hint="@string/project_description"
-            android:ems="10" >
-        </EditText>
-        
-        <EditText
-            android:id="@+id/project_deadline"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/project_description"
-            android:ems="10"
-            android:inputType="date" >
-        </EditText>
-        
-        <Button 
-            android:id="@+id/button_ok"
-            android:text="@android:string/ok"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/project_deadline" />
     </RelativeLayout>

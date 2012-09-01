@@ -1,49 +1,54 @@
 package com.noughmad.ntasks;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.app.ListFragment;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
 
-import com.parse.GetCallback;
-import com.parse.ParseException;
 import com.parse.ParseObject;
-import com.parse.ParseQuery;
 
 public class ProjectDetailActivity extends Activity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		
-		setContentView(R.layout.project_detail_container);
-		
+				
 		final ActionBar bar = getActionBar();
+		bar.setTitle("");
 		bar.setDisplayHomeAsUpEnabled(true);
+		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 		
-		ParseQuery query = new ParseQuery("Project");
-		query.setCachePolicy(ParseQuery.CachePolicy.CACHE_ELSE_NETWORK);
-		query.getInBackground(getIntent().getStringExtra("project"), new GetCallback() {
-
-			@Override
-			public void done(ParseObject project, ParseException e) {
-				if (e == null) {
-					Log.d("ProjectDetailActivity", "Got project " + project.getString("name"));
-					setTitle(project.getString("name"));
-					ProjectDetailFragment fragment = (ProjectDetailFragment) getFragmentManager().findFragmentByTag("project-detail");
-					fragment.setProject(project);
-					
-					TaskListFragment tasksFragment = (TaskListFragment) getFragmentManager().findFragmentByTag("project-task-list");
-					tasksFragment.setProject(project);
-					
-				} else {
-					Log.e("ProjectDetailActivity", e.getLocalizedMessage());
-				}
-			}
+		List<String> titles = new ArrayList<String>();
+		for (ParseObject project : Utils.projects) {
+			titles.add(project.getString("title"));
+		}
+		
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, titles);
+		bar.setListNavigationCallbacks(adapter, new ActionBar.OnNavigationListener() {
 			
+			public boolean onNavigationItemSelected(int itemPosition, long itemId) {
+				try {
+					showProject(Utils.projects.get(itemPosition));
+				} catch (IndexOutOfBoundsException e) {
+					return false;
+				}
+				return true;
+			}
 		});
+		
+		
+		if (getIntent().getExtras().containsKey("project")) {
+			int position = getIntent().getExtras().getInt("project");
+			showProject(Utils.projects.get(position));
+		}
 	}
 
 	@Override
@@ -56,6 +61,22 @@ public class ProjectDetailActivity extends Activity {
 		return super.onOptionsItemSelected(item);
 	}
 	
+	public void showProject(ParseObject project) {
+		String tag = "project-detail-" + project.getObjectId();
+		
+		FragmentManager fm = getFragmentManager();
+		ListFragment tasksFragment = (ListFragment) fm.findFragmentByTag(tag);
+		FragmentTransaction ft = fm.beginTransaction();
+
+		if (tasksFragment == null) {
+			tasksFragment = new ListFragment();
+			tasksFragment.setListAdapter(new TaskListAdapter(this, project));
+		}
+		
+		ft.replace(android.R.id.content, tasksFragment, tag);
+		ft.addToBackStack(null);
+		ft.commit();	
+	}
 	
 	
 }

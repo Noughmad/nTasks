@@ -66,6 +66,8 @@ public class TasksProvider extends ContentProvider {
 		ParseQuery taskQuery = new ParseQuery("Task");
 		taskQuery.whereEqualTo("project", projectQuery);
 		
+		taskQuery.setCachePolicy(ParseQuery.CachePolicy.CACHE_ELSE_NETWORK);
+		
 		if (q.isEmpty()) {
 			// On an empty query, only show the last used task
 			taskQuery.setLimit(1);
