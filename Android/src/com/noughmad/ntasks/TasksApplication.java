@@ -17,6 +17,8 @@ public class TasksApplication extends Application {
 		defaultACL.setPublicReadAccess(false);
 		defaultACL.setPublicWriteAccess(false);
 		ParseACL.setDefaultACL(defaultACL, true);
+		
+		Utils.taskStatuses = getResources().getStringArray(R.array.task_status_array);
 	}
 
 }

@@ -6,6 +6,8 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.graphics.Color;
+
 import com.parse.ParseObject;
 
 public class Utils {
@@ -45,4 +47,21 @@ public class Utils {
 	
 	public static List<ParseObject> projects;
 	public static ParseObject activeTask = null;
+	public static String[] taskStatuses;
+	
+	public static int[] statusColors = new int[] {
+		Color.parseColor("#bd362f"),
+		Color.parseColor("#f89406"),
+		Color.parseColor("#2f96b4"),
+		Color.parseColor("#51a351")
+	};
+	
+	public static int statusColor(int status)
+	{
+		if (status > -1 && status < 4) {
+			return statusColors[status];
+		} else {
+			return Color.TRANSPARENT;
+		}
+	}
 }

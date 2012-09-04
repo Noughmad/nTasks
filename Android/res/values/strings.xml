@@ -16,6 +16,7 @@
     <string name="no_projects">Congratulations, you have nothing to do!</string>
     <string name="add_project">New project</string>
     <string name="add_task">New task</string>
+    <string name="add_task_name">New task name</string>
     <string name="project_name">Project name</string>
     <string name="project_description">Project description</string>
     <string name="project_client">Client</string>
@@ -24,5 +25,10 @@
         <item>To-Do</item>
         <item>In Progress</item>
         <item>Done</item>
+    </string-array>
+    <string-array name="task_actions">
+        <item>Rename</item>
+        <item>Add Note</item>
+        <item>Delete</item>
     </string-array>
 </resources>

@@ -13,9 +13,9 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.SimpleAdapter;
 
 import com.parse.FindCallback;
@@ -33,7 +33,6 @@ public class ProjectListFragment extends ListFragment {
 
 		public boolean setViewValue(View view, Object data,
 				String textRepresentation) {
-			Log.d("ProjectListFragment", "Binding text " + textRepresentation + " to view " + view.toString());
 			switch (view.getId()) {
 			case R.id.project_image:
 				// TODO: Create icons and map them to projects
@@ -60,7 +59,7 @@ public class ProjectListFragment extends ListFragment {
 					List<Map<String, Object>> list = new LinkedList<Map<String, Object>>();
 					for (ParseObject project : projects) {
 						Map<String, Object> map = new HashMap<String, Object>();
-						Log.d("ProjectListFragment", "Found project " + project.getString("name"));
+						Log.d("ProjectListFragment", "Found project " + project.getString("title"));
 						for (String key : from)
 						{
 							map.put(key, project.get(key));
@@ -76,20 +75,18 @@ public class ProjectListFragment extends ListFragment {
 			}
 		});
 	}
+	
+	@Override
+	public void onListItemClick(ListView l, View v, int position, long id) {
+		Intent intent = new Intent(getActivity(), ProjectDetailActivity.class);
+		intent.putExtra("project", position);
+		startActivity(intent);
+	}
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		
-		getListView().setOnItemClickListener(new OnItemClickListener() {
-
-			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				Intent intent = new Intent(getActivity(), ProjectDetailActivity.class);
-				intent.putExtra("project", position);
-				startActivity(intent);
-			}
-		});
-		
+				
 		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
 
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {

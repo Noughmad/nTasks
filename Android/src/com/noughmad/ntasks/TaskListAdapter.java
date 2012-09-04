@@ -11,7 +11,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -27,11 +26,17 @@ import com.parse.ParseQuery;
 public class TaskListAdapter extends BaseAdapter {
 	private final static String TAG = "TaskListAdapter";
 	
-	private List<ParseObject> mTasks;
+	private final static int VIEW_TYPE_HEADER = 0;
+	private final static int VIEW_TYPE_TASK = 1;
+	private final static int VIEW_TYPE_COUNT = 2;
+	
+	List<ParseObject> mTasks;
 	private Context mContext;
+	private ParseObject mProject;
 	
 	public TaskListAdapter(Context context, ParseObject project) {
 		mContext = context;
+		mProject = project;
 		ParseQuery query = new ParseQuery("Task");
 		query.setCachePolicy(ParseQuery.CachePolicy.CACHE_THEN_NETWORK);
 		query.whereEqualTo("project", project);
@@ -47,103 +52,124 @@ public class TaskListAdapter extends BaseAdapter {
 			}});
 	}
 	
-	public void setTasks(List<ParseObject> tasks)
+	private void setTasks(List<ParseObject> tasks)
 	{
 		mTasks = tasks;
 		notifyDataSetChanged();
 	}
 	
 	public int getCount() {
-		return mTasks.size();
+		return mTasks.size() + 1;
 	}
 
 	public Object getItem(int position) {
-		return mTasks.get(position);
+		if (position == 0 || position == getCount()-1) {
+			return null;
+		}
+		return mTasks.get(position-1);
 	}
 
 	public long getItemId(int position) {
-		return Long.parseLong(mTasks.get(position).getObjectId(), 36);
+		if (position == 0 || position == getCount()-1) {
+			return 0;
+		}
+		return Long.parseLong(mTasks.get(position-1).getObjectId(), 36);
 	}
 
 	public int getItemViewType(int position) {
-		return 0;
+		if (position == 0) {
+			return VIEW_TYPE_HEADER;
+		} else {
+			return VIEW_TYPE_TASK;
+		}
 	}
 
 	public View getView(int position, View convertView, ViewGroup parent) {
-		final ParseObject task = mTasks.get(position);
+		int type = getItemViewType(position);
 		View view = convertView;
-		if (view == null) {
-			view = ((LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.task_item, parent, false);
 
-			Spinner spinner = (Spinner)view.findViewById(R.id.task_status);
-			ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(mContext,
-			        R.array.task_status_array, android.R.layout.simple_spinner_item);
-			adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-			spinner.setAdapter(adapter);
-
-			((LinearLayout)view.findViewById(R.id.task_item_layout)).setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
-			((LinearLayout)view.findViewById(R.id.task_item_layout)).setDividerPadding(8);
-		}
-		
-		Spinner spinner = (Spinner)view.findViewById(R.id.task_status);
-		if (task.has("status") && task.getInt("status") > -1 && task.getInt("status") < 5) {
-			spinner.setSelection(task.getInt("status"));
-		} else {
-			spinner.setSelection(1);
-		}
-		spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-
-			public void onItemSelected(AdapterView<?> spinner, View item,
-					int position, long id) {
-				task.put("status", position);
-				task.saveEventually();
+		if (type == VIEW_TYPE_HEADER) {
+			if (view == null)
+			{
+				view = new TextView(mContext);
 			}
-
-			public void onNothingSelected(AdapterView<?> spinner) {
-				
-			}
-		});
-		((TextView)view.findViewById(R.id.task_name)).setText(task.getString("name"));
-				
-		ImageButton button = (ImageButton) view.findViewById(R.id.task_track_button);
-		if (task.getBoolean("active")) {
-			button.setImageResource(android.R.drawable.ic_media_pause);
-			view.setBackgroundResource(R.drawable.list_selector_background_selected);
+			((TextView)view).setText(mProject.getString("title"));
 		} else {
-			button.setImageResource(android.R.drawable.ic_media_play);
-			view.setBackgroundResource(android.R.drawable.list_selector_background);
-		}
-		
-		button.setOnClickListener(new View.OnClickListener() {
+			final ParseObject task = mTasks.get(position-1);
+			if (view == null) {
+				Log.d(TAG, "Creating a new task item view");
+				view = ((LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.task_item, parent, false);
+				view.setLongClickable(true);
+	
+				Spinner spinner = (Spinner)view.findViewById(R.id.task_status);
+				spinner.setAdapter(new TaskStatusAdapter(mContext));
+	
+				((LinearLayout)view.findViewById(R.id.task_item_layout)).setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
+				((LinearLayout)view.findViewById(R.id.task_item_layout)).setDividerPadding(8);
+			}
 			
-			public void onClick(View v) {
-				if (task.getBoolean("active")) {
-					stopTracking(task);
-				} else {
-					startTracking(task);
-				}
+			Spinner spinner = (Spinner)view.findViewById(R.id.task_status);
+			spinner.setOnItemSelectedListener(null);
+			if (task.has("status") && task.getInt("status") > -1 && task.getInt("status") < 5) {
+				spinner.setSelection(task.getInt("status"));
+			} else {
+				spinner.setSelection(1);
 			}
-		});
-		
-		TextView durationView = (TextView)view.findViewById(R.id.task_duration);
-		long duration = task.getLong("duration"); 
-		if (duration < 1000 * 60 * 60 * 24) {
-			// Show minutes for durations shorter than a day, otherwise show only hours
-			SimpleDateFormat format = new SimpleDateFormat("H 'h' mm 'min'");
-			format.setTimeZone(TimeZone.getTimeZone("GMT"));
-			durationView.setText(format.format(new Date(duration)));
-		} else {
-			durationView.setText(Integer.toString((int) (duration / 1000 / 60 / 60)) + " h");
+			spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+	
+				public void onItemSelected(AdapterView<?> spinner, View item,
+						int position, long id) {
+					Log.d(TAG, "Setting status of " + task.getString("name") + " to " + Integer.toString(position) );
+					task.put("status", position);
+					task.saveEventually();
+				}
+	
+				public void onNothingSelected(AdapterView<?> spinner) {
+					
+				}
+			});
+			((TextView)view.findViewById(R.id.task_name)).setText(task.getString("name"));
+					
+			ImageButton button = (ImageButton) view.findViewById(R.id.task_track_button);
+			if (task.getBoolean("active")) {
+				button.setImageResource(android.R.drawable.ic_media_pause);
+				view.setBackgroundResource(R.drawable.list_selector_background_selected);
+			} else {
+				button.setImageResource(android.R.drawable.ic_media_play);
+				view.setBackgroundResource(android.R.drawable.list_selector_background);
+			}
+			
+			button.setOnClickListener(new View.OnClickListener() {
+				
+				public void onClick(View v) {
+					if (task.getBoolean("active")) {
+						stopTracking(task);
+					} else {
+						startTracking(task);
+					}
+				}
+			});
+			
+			TextView durationView = (TextView)view.findViewById(R.id.task_duration);
+			long duration = task.getLong("duration"); 
+			if (duration < 1000 * 60 * 60 * 24) {
+				// Show minutes for durations shorter than a day, otherwise show only hours
+				SimpleDateFormat format = new SimpleDateFormat("H 'h' mm 'min'");
+				format.setTimeZone(TimeZone.getTimeZone("GMT"));
+				durationView.setText(format.format(new Date(duration)));
+			} else {
+				durationView.setText(Integer.toString((int) (duration / 1000 / 60 / 60)) + " h");
+			}
+			
+			boolean showDuration = mContext.getResources().getBoolean(R.bool.task_item_show_duration); 
+			durationView.setVisibility(showDuration ? View.VISIBLE : View.GONE);
 		}
-		
-		boolean showDuration = mContext.getResources().getBoolean(R.bool.task_item_show_duration); 
-		durationView.setVisibility(showDuration ? View.VISIBLE : View.GONE);
 		
 		return view;
 	}
 
 	public int getViewTypeCount() {
-		return 1;
+		return VIEW_TYPE_COUNT;
 	}
 
 	public boolean hasStableIds() {
@@ -155,11 +181,11 @@ public class TaskListAdapter extends BaseAdapter {
 	}
 
 	public boolean areAllItemsEnabled() {
-		return true;
+		return false;
 	}
 
 	public boolean isEnabled(int position) {
-		return true;
+		return position > 0;
 	}
 	
 	public void startTracking(ParseObject task) {
@@ -170,7 +196,7 @@ public class TaskListAdapter extends BaseAdapter {
 		Log.i(TAG, "Start tracking " + task.getString("name"));
 		Utils.startTracking(task);
 		
-		Toast.makeText(mContext, "Now tracking '" + task.getString("name") + "'", Toast.LENGTH_LONG).show();
+		Toast.makeText(mContext, "Now tracking '" + task.getString("name") + "'", Toast.LENGTH_SHORT).show();
 		notifyDataSetChanged();
 	}
 	
@@ -182,7 +208,7 @@ public class TaskListAdapter extends BaseAdapter {
 		Log.i(TAG, "Stop tracking " + task.getString("name"));
 		Utils.stopTracking(task);
 		
-		Toast.makeText(mContext, "Stopped tracking '" + task.getString("name") + "'", Toast.LENGTH_LONG).show();
+		Toast.makeText(mContext, "Stopped tracking '" + task.getString("name") + "'", Toast.LENGTH_SHORT).show();
 		notifyDataSetChanged();
 	}
 }
