@@ -111,7 +111,4 @@ public class AccountActivity extends Activity implements LoginFragment.OnLoginLi
 		setResult(RESULT_OK, i);
 		finish();
 	}
-	
-	
-
 }

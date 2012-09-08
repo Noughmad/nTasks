@@ -1,12 +1,17 @@
 package com.noughmad.ntasks;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -34,6 +39,31 @@ public class MainActivity extends Activity {
 			Log.i(TAG, "Current user is " + ParseUser.getCurrentUser().getUsername());
 			showProjects();
 		}
+		
+		if (getPreferences(MODE_PRIVATE).getBoolean("warnNoNetwork", true)) {
+			ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+			if (cm.getActiveNetworkInfo() == null || !cm.getActiveNetworkInfo().isAvailable()) {
+				AlertDialog.Builder builder = new AlertDialog.Builder(this);
+				builder.setIcon(android.R.drawable.ic_dialog_alert);
+				builder.setTitle(R.string.no_network_title);
+				builder.setMessage(R.string.no_network_message);
+				builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+					
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.dismiss();
+					}
+				});
+				builder.setNeutralButton("Don't show again", new DialogInterface.OnClickListener() {
+					
+					public void onClick(DialogInterface dialog, int which) {
+						getPreferences(MODE_PRIVATE).edit().putBoolean("warnNoNetwork", false).apply();
+						dialog.dismiss();
+					}
+				});
+				builder.create().show();
+			}			
+		}
+		
 	}
 
 	@Override
@@ -41,6 +71,8 @@ public class MainActivity extends Activity {
 		if (requestCode == LOGIN_REQUEST) {
 			if (resultCode == RESULT_OK) {
 				showProjects();
+			} else {
+				finish();
 			}
 		}
 	}
@@ -79,6 +111,13 @@ public class MainActivity extends Activity {
 		    // Create and show the dialog.
 		    ProjectDialogFragment newFragment = ProjectDialogFragment.create();
 		    newFragment.show(ft, "project-dialog");
+		    break;
+		    
+		case R.id.menu_refresh:
+			ProjectListFragment fragment = (ProjectListFragment) getFragmentManager().findFragmentByTag("project-list");
+			if (fragment != null) {
+				fragment.updateProjectList();
+			}
 		}
 		return true;
 	}

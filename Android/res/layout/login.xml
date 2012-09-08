@@ -26,13 +26,6 @@
             android:layout_height="wrap_content"
             android:text="@string/login" 
             android:layout_below="@id/loginPassword" />
-
-        <ProgressBar
-            android:id="@+id/loginProgress"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/loginButton"
-            android:visibility="gone" />
         
         <TextView
             android:id="@+id/loginMessageText"
@@ -42,5 +35,19 @@
             android:visibility="gone"
             android:layout_above="@id/loginUsername" />
         
+        <Button 
+            android:id="@+id/loginTwitterButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/loginButton"
+            android:text="@string/loginTwitter" />   
+                 
+        <Button 
+            android:id="@+id/loginFacebookButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/loginButton"
+            android:layout_toRightOf="@id/loginTwitterButton"
+            android:text="@string/loginFacebook" />    
 
 </RelativeLayout>

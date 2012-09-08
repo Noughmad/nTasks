@@ -1,7 +1,9 @@
 package com.noughmad.ntasks;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -62,6 +64,17 @@ public class Utils {
 			return statusColors[status];
 		} else {
 			return Color.TRANSPARENT;
+		}
+	}
+
+	public static CharSequence formatDuration(long duration) {
+		if (duration < 1000 * 60 * 60 * 24) {
+			// Show minutes for durations shorter than a day, otherwise show only hours
+			SimpleDateFormat format = new SimpleDateFormat("H 'h' mm 'min'");
+			format.setTimeZone(TimeZone.getTimeZone("GMT"));
+			return format.format(new Date(duration));
+		} else {
+			return Long.toString(duration / 1000 / 60 / 60) + " h";
 		}
 	}
 }

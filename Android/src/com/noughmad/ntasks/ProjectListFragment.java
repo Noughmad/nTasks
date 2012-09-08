@@ -44,7 +44,7 @@ public class ProjectListFragment extends ListFragment {
 		
 	}
 	
-	private void updateProjectList()
+	public void updateProjectList()
 	{
 		ParseQuery query = new ParseQuery("Project");
 		query.setCachePolicy(ParseQuery.CachePolicy.CACHE_THEN_NETWORK);
@@ -56,19 +56,7 @@ public class ProjectListFragment extends ListFragment {
 				if (e == null) {
 					Log.i("ProjectListFragment", "Retrieved " + projects.size() + " projects");
 					Utils.projects = projects;
-					List<Map<String, Object>> list = new LinkedList<Map<String, Object>>();
-					for (ParseObject project : projects) {
-						Map<String, Object> map = new HashMap<String, Object>();
-						Log.d("ProjectListFragment", "Found project " + project.getString("title"));
-						for (String key : from)
-						{
-							map.put(key, project.get(key));
-						}
-						list.add(map);
-					}
-					SimpleAdapter adapter = new SimpleAdapter(getActivity(), list, R.layout.project_item, from, to);
-					adapter.setViewBinder(new ProjectItemBinder());
-					setListAdapter(adapter);
+					setProjects(projects);
 				} else {
 					Log.e("ProjectListFragment", e.getMessage());
 				}
@@ -76,8 +64,25 @@ public class ProjectListFragment extends ListFragment {
 		});
 	}
 	
+	private void setProjects(List<ParseObject> projects) {
+		List<Map<String, Object>> list = new LinkedList<Map<String, Object>>();
+		for (ParseObject project : projects) {
+			Map<String, Object> map = new HashMap<String, Object>();
+			Log.d("ProjectListFragment", "Found project " + project.getString("title"));
+			for (String key : from)
+			{
+				map.put(key, project.get(key));
+			}
+			list.add(map);
+		}
+		SimpleAdapter adapter = new SimpleAdapter(getActivity(), list, R.layout.project_item, from, to);
+		adapter.setViewBinder(new ProjectItemBinder());
+		setListAdapter(adapter);
+	}
+	
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
+		Log.i("ProjectListFragment", "Starting project detail activity for project " + position + " => "+ Utils.projects.get(position).getString("title"));
 		Intent intent = new Intent(getActivity(), ProjectDetailActivity.class);
 		intent.putExtra("project", position);
 		startActivity(intent);
@@ -105,6 +110,9 @@ public class ProjectListFragment extends ListFragment {
 			    return true;
 			}});
 		
+		if (Utils.projects != null) {
+			setProjects(Utils.projects);
+		}
 		updateProjectList();
 	}
 	

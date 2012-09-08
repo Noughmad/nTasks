@@ -1,19 +1,23 @@
 package com.noughmad.ntasks;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.TimeZone;
+import java.util.Map;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
+import android.widget.BaseExpandableListAdapter;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -23,60 +27,111 @@ import com.parse.ParseException;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
-public class TaskListAdapter extends BaseAdapter {
+public class TaskListAdapter extends BaseExpandableListAdapter {
 	private final static String TAG = "TaskListAdapter";
 	
-	private final static int VIEW_TYPE_HEADER = 0;
-	private final static int VIEW_TYPE_TASK = 1;
-	private final static int VIEW_TYPE_COUNT = 2;
+	// Zero is reserved for children
+	private final static int VIEW_TYPE_HEADER = 1;
+	private final static int VIEW_TYPE_TASK = 2;
+	private final static int VIEW_TYPE_COUNT = 3;
 	
 	List<ParseObject> mTasks;
+	Map<String, List<ParseObject>> mNotes;
 	private Context mContext;
 	private ParseObject mProject;
 	
 	public TaskListAdapter(Context context, ParseObject project) {
 		mContext = context;
 		mProject = project;
+		updateTasks(true);		
+	}
+	
+	public void updateTasks(final boolean cache) {
 		ParseQuery query = new ParseQuery("Task");
-		query.setCachePolicy(ParseQuery.CachePolicy.CACHE_THEN_NETWORK);
-		query.whereEqualTo("project", project);
+		if (cache) {
+			query.setCachePolicy(ParseQuery.CachePolicy.CACHE_THEN_NETWORK);
+		} else {
+			query.setCachePolicy(ParseQuery.CachePolicy.NETWORK_ONLY);
+		}
+		query.whereEqualTo("project", mProject);
 		query.findInBackground(new FindCallback() {
 
 			@Override
 			public void done(List<ParseObject> tasks, ParseException e) {
 				if (e == null) {
-					setTasks(tasks);
+					setTasks(tasks, cache);
 				} else {
 					Toast.makeText(mContext, e.getMessage(), Toast.LENGTH_LONG).show();
 				}
 			}});
 	}
 	
-	private void setTasks(List<ParseObject> tasks)
+	private void setTasks(List<ParseObject> tasks, boolean cache)
 	{
 		mTasks = tasks;
+		Log.i(TAG, "Received " + Integer.toString(tasks.size()) + " tasks");
+		notifyDataSetChanged();
+		
+		ParseQuery query = new ParseQuery("Note");
+		query.whereContainedIn("task", mTasks);
+		if (cache) {
+			query.setCachePolicy(ParseQuery.CachePolicy.CACHE_THEN_NETWORK);
+		} else {
+			query.setCachePolicy(ParseQuery.CachePolicy.NETWORK_ONLY);
+		}		
+
+		query.findInBackground(new FindCallback() {
+			@Override
+			public void done(List<ParseObject> notes, ParseException e) {
+				if (e == null) {
+					setNotes(notes);
+				} else {
+					Log.w(TAG, "Error loading task notes");
+				}
+			}});
+	}
+	
+	private void setNotes(List<ParseObject> notes) {
+		if (mNotes == null) {
+			mNotes = new HashMap<String, List<ParseObject>>();
+		} else {
+			mNotes.clear();
+		}
+		for (ParseObject note : notes) {
+			ParseObject task = note.getParseObject("task");
+			if (!mNotes.containsKey(task.getObjectId())) {
+				mNotes.put(task.getObjectId(), new ArrayList<ParseObject>());
+			}
+			
+			mNotes.get(task.getObjectId()).add(note);
+		}
+		Log.i(TAG, "Received " + Integer.toString(notes.size()) + " notes");
 		notifyDataSetChanged();
 	}
 	
-	public int getCount() {
-		return mTasks.size() + 1;
+	public int getGroupCount() {
+		if (mTasks == null) {
+			return 1;
+		} else {
+			return mTasks.size() + 1;
+		}
 	}
 
-	public Object getItem(int position) {
-		if (position == 0 || position == getCount()-1) {
+	public Object getGroup(int position) {
+		if (position == 0) {
 			return null;
 		}
 		return mTasks.get(position-1);
 	}
 
-	public long getItemId(int position) {
-		if (position == 0 || position == getCount()-1) {
+	public long getGroupId(int position) {
+		if (position == 0) {
 			return 0;
 		}
 		return Long.parseLong(mTasks.get(position-1).getObjectId(), 36);
 	}
 
-	public int getItemViewType(int position) {
+	public int getGroupType(int position) {
 		if (position == 0) {
 			return VIEW_TYPE_HEADER;
 		} else {
@@ -84,23 +139,46 @@ public class TaskListAdapter extends BaseAdapter {
 		}
 	}
 
-	public View getView(int position, View convertView, ViewGroup parent) {
-		int type = getItemViewType(position);
+	public View getGroupView(int position, boolean isExpanded, View convertView, ViewGroup parent) {
+		int type = getGroupType(position);
 		View view = convertView;
 
 		if (type == VIEW_TYPE_HEADER) {
 			if (view == null)
 			{
-				view = new TextView(mContext);
+				view = ((LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.project_status, parent, false);
 			}
-			((TextView)view).setText(mProject.getString("title"));
+			ProgressBar bar = (ProgressBar) view.findViewById(R.id.project_progress);
+			if (mTasks != null) {
+				bar.setMax(mTasks.size());
+				int done = 0;
+				long duration = 0;
+				for (ParseObject task : mTasks) {
+					if (task.getInt("status") > 2) {
+						done++;
+					}
+					duration += task.getLong("duration");
+				}
+				bar.setProgress(done);
+				bar.setIndeterminate(false);
+				
+				String d = String.format("%d/%d tasks done, %s spent", done, mTasks.size(), Utils.formatDuration(duration));
+				((TextView)view.findViewById(R.id.project_time)).setText(d);
+			} else {
+				bar.setIndeterminate(true);
+				((TextView)view.findViewById(R.id.project_time)).setText(Utils.formatDuration(0));				
+			}
+			
+			((ImageView)view.findViewById(R.id.project_image)).setImageResource(R.drawable.ic_launcher);
+			
 		} else {
 			final ParseObject task = mTasks.get(position-1);
 			if (view == null) {
 				Log.d(TAG, "Creating a new task item view");
-				view = ((LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.task_item, parent, false);
-				view.setLongClickable(true);
-	
+				view = ((LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.task_item, null, false);
+				
+				((ViewGroup)view).setDescendantFocusability(ViewGroup.FOCUS_BLOCK_DESCENDANTS);
+				
 				Spinner spinner = (Spinner)view.findViewById(R.id.task_status);
 				spinner.setAdapter(new TaskStatusAdapter(mContext));
 	
@@ -122,6 +200,7 @@ public class TaskListAdapter extends BaseAdapter {
 					Log.d(TAG, "Setting status of " + task.getString("name") + " to " + Integer.toString(position) );
 					task.put("status", position);
 					task.saveEventually();
+					notifyDataSetChanged();
 				}
 	
 				public void onNothingSelected(AdapterView<?> spinner) {
@@ -133,10 +212,10 @@ public class TaskListAdapter extends BaseAdapter {
 			ImageButton button = (ImageButton) view.findViewById(R.id.task_track_button);
 			if (task.getBoolean("active")) {
 				button.setImageResource(android.R.drawable.ic_media_pause);
-				view.setBackgroundResource(R.drawable.list_selector_background_selected);
+				// view.setBackgroundResource(R.drawable.list_selector_background_selected);
 			} else {
 				button.setImageResource(android.R.drawable.ic_media_play);
-				view.setBackgroundResource(android.R.drawable.list_selector_background);
+				// view.setBackgroundResource(android.R.drawable.list_selector_background);
 			}
 			
 			button.setOnClickListener(new View.OnClickListener() {
@@ -151,15 +230,7 @@ public class TaskListAdapter extends BaseAdapter {
 			});
 			
 			TextView durationView = (TextView)view.findViewById(R.id.task_duration);
-			long duration = task.getLong("duration"); 
-			if (duration < 1000 * 60 * 60 * 24) {
-				// Show minutes for durations shorter than a day, otherwise show only hours
-				SimpleDateFormat format = new SimpleDateFormat("H 'h' mm 'min'");
-				format.setTimeZone(TimeZone.getTimeZone("GMT"));
-				durationView.setText(format.format(new Date(duration)));
-			} else {
-				durationView.setText(Integer.toString((int) (duration / 1000 / 60 / 60)) + " h");
-			}
+			durationView.setText(Utils.formatDuration(task.getLong("duration"))); 
 			
 			boolean showDuration = mContext.getResources().getBoolean(R.bool.task_item_show_duration); 
 			durationView.setVisibility(showDuration ? View.VISIBLE : View.GONE);
@@ -168,7 +239,7 @@ public class TaskListAdapter extends BaseAdapter {
 		return view;
 	}
 
-	public int getViewTypeCount() {
+	public int getGroupTypeCount() {
 		return VIEW_TYPE_COUNT;
 	}
 
@@ -182,10 +253,6 @@ public class TaskListAdapter extends BaseAdapter {
 
 	public boolean areAllItemsEnabled() {
 		return false;
-	}
-
-	public boolean isEnabled(int position) {
-		return position > 0;
 	}
 	
 	public void startTracking(ParseObject task) {
@@ -210,5 +277,63 @@ public class TaskListAdapter extends BaseAdapter {
 		
 		Toast.makeText(mContext, "Stopped tracking '" + task.getString("name") + "'", Toast.LENGTH_SHORT).show();
 		notifyDataSetChanged();
+	}
+
+	public Object getChild(int groupPosition, int childPosition) {
+		ParseObject task = (ParseObject)getGroup(groupPosition);
+		return mNotes.get(task.getObjectId()).get(childPosition);
+	}
+
+	public long getChildId(int groupPosition, int childPosition) {
+		ParseObject task = (ParseObject)getGroup(groupPosition);
+		return Long.parseLong(mNotes.get(task.getObjectId()).get(childPosition).getObjectId(), 36);
+	}
+
+	public View getChildView(int groupPosition, int childPosition,
+			boolean isLastChild, View convertView, ViewGroup parent) {
+		final ParseObject note = (ParseObject)getChild(groupPosition, childPosition);
+		
+		View view = convertView;
+		if (view == null) {
+			Log.d(TAG, "Creating a new note view");
+			view = ((LayoutInflater)mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.note_item, parent, false);
+			view.findViewById(R.id.note_delete_button).setOnClickListener(new View.OnClickListener() {
+				public void onClick(View v) {
+					AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+					builder.setMessage("Really delete this note?");
+					builder.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.dismiss();
+						}
+					});
+					builder.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							String taskId = note.getParseObject("task").getObjectId();
+							mNotes.get(taskId).remove(note);
+							note.deleteEventually();
+							notifyDataSetChanged();
+						}
+					});
+					builder.create().show();
+				}
+			});
+		} else {
+			Log.d(TAG, "Converting a note view " + view);
+		}
+		TextView textView = (TextView)view.findViewById(R.id.note_text);
+		textView.setText(note.getString("text"));
+		return view;
+	}
+
+	public int getChildrenCount(int groupPosition) {
+		if (groupPosition == 0 || mNotes == null || mNotes.get(mTasks.get(groupPosition-1).getObjectId()) == null) {
+			return 0;
+		} else {
+			return mNotes.get(mTasks.get(groupPosition-1).getObjectId()).size();
+		}
+	}
+
+	public boolean isChildSelectable(int groupPosition, int childPosition) {
+		return false;
 	}
 }

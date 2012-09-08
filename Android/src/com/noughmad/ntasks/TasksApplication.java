@@ -4,6 +4,7 @@ import android.app.Application;
 
 import com.parse.Parse;
 import com.parse.ParseACL;
+import com.parse.ParseTwitterUtils;
 
 public class TasksApplication extends Application {
 
@@ -17,6 +18,9 @@ public class TasksApplication extends Application {
 		defaultACL.setPublicReadAccess(false);
 		defaultACL.setPublicWriteAccess(false);
 		ParseACL.setDefaultACL(defaultACL, true);
+		
+		ParseTwitterUtils.initialize(Secrets.TWITTER_CONSUMER_KEY, Secrets.TWITTER_CONSUMER_SECRET);
+		// ParseFacebookUtils.initialize(appId);
 		
 		Utils.taskStatuses = getResources().getStringArray(R.array.task_status_array);
 	}

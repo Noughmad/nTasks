@@ -6,9 +6,9 @@ import java.util.List;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
-import android.app.ListFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -48,6 +48,7 @@ public class ProjectDetailActivity extends Activity {
 			
 			public boolean onNavigationItemSelected(int itemPosition, long itemId) {
 				try {
+					Log.i(TAG, "Navigation item " + itemPosition + " selected");
 					showProject(Utils.projects.get(itemPosition));
 				} catch (IndexOutOfBoundsException e) {
 					return false;
@@ -56,14 +57,18 @@ public class ProjectDetailActivity extends Activity {
 			}
 		});
 		
-		
-		if (getIntent().getExtras().containsKey("project")) {
-			int position = getIntent().getExtras().getInt("project");
-			showProject(Utils.projects.get(position));
-		}
+		onNewIntent(getIntent());
 	}
 	
-	
+	@Override
+	protected void onNewIntent(Intent intent) {
+		int position = intent.getIntExtra("project", -1);
+		if (position > -1) {
+			getActionBar().setSelectedNavigationItem(position);
+		}
+	}
+
+
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
@@ -87,40 +92,48 @@ public class ProjectDetailActivity extends Activity {
 					ParseObject task = new ParseObject("Task");
 					task.put("project", mProject);
 					task.put("name", edit.getText().toString());
-					task.saveEventually();
+					task.put("status", 1);
+					// The task will be saved by the TaskListAdapter, no need to save it here
 					
-					ListFragment fragment = (ListFragment)getFragmentManager().findFragmentByTag("project-detail-" + mProject.getObjectId());
+					ProjectDetailFragment fragment = (ProjectDetailFragment)getFragmentManager().findFragmentByTag("project-detail-" + mProject.getObjectId());
 					if (fragment != null) {
 						Log.d(TAG, "Found project detail fragment for " + mProject.getString("title"));
-						TaskListAdapter adapter = (TaskListAdapter)fragment.getListAdapter();
+						TaskListAdapter adapter = (TaskListAdapter)fragment.getListView().getExpandableListAdapter();
 						adapter.mTasks.add(task);
 						adapter.notifyDataSetChanged();
 					} else {
 						Log.w(TAG, "Could not find project detail fragment for project " + mProject.getString("title"));
+						task.saveEventually();
 					}
 				}
 			});
 			builder.create().show();
+		} else if (item.getItemId() == R.id.menu_refresh) {
+			ProjectDetailFragment fragment = (ProjectDetailFragment)getFragmentManager().findFragmentByTag("project-detail-" + mProject.getObjectId());
+			if (fragment != null) {
+				fragment.updateTaskList();
+			}
 		}
 		return super.onOptionsItemSelected(item);
 	}
 	
-	public void showProject(ParseObject project) {
+	public void showProject(ParseObject project) {	
 		mProject = project;
 		String tag = "project-detail-" + project.getObjectId();
 		Log.i(TAG, "Showing project " + project.getString("title"));
 		
 		FragmentManager fm = getFragmentManager();
 		ProjectDetailFragment tasksFragment = (ProjectDetailFragment) fm.findFragmentByTag(tag);
-		FragmentTransaction ft = fm.beginTransaction();
-
+		
 		if (tasksFragment == null) {
+			Log.i(TAG, "Creating a new fragment for the project");
 			tasksFragment = ProjectDetailFragment.create(project);
 		}
-		
-		ft.replace(android.R.id.content, tasksFragment, tag);
-		ft.addToBackStack(null);
-		ft.commit();	
+
+		Fragment currentFragment = fm.findFragmentById(android.R.id.content);
+		if (currentFragment != tasksFragment) {
+			fm.beginTransaction().replace(android.R.id.content, tasksFragment, tag).commit();					
+		}
 	}
 
 

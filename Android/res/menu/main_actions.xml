@@ -6,14 +6,18 @@
           android:showAsAction="ifRoom|collapseActionView"
           android:actionViewClass="com.noughmad.ntasks.QuickTaskView" />
 
+    <item android:id="@+id/menu_refresh"
+          android:title="@string/refresh"
+          android:showAsAction="never" />
+    
     <item android:id="@+id/menu_add_project"
           android:icon="@android:drawable/ic_menu_add"
           android:title="@string/add_project"
-          android:showAsAction="ifRoom" />
+          android:showAsAction="ifRoom|withText" />
     
     <item android:id="@+id/menu_logout"
           android:icon="@android:drawable/ic_lock_power_off"
           android:title="@string/menu_logout"
-          android:showAsAction="ifRoom" />
+          android:showAsAction="ifRoom|withText" />
           
 </menu>

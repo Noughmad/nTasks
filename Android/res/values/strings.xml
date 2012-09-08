@@ -5,6 +5,8 @@
     <string name="username">User name</string>
     <string name="password">Password</string>
     <string name="login">Log In</string>
+    <string name="loginTwitter">Log In with Twitter</string>
+    <string name="loginFacebook">Log In with Facebook</string>
     <string name="register">Register</string>
     <string name="menu_save">Save</string>
     <string name="menu_search">Search</string>
@@ -20,6 +22,10 @@
     <string name="project_name">Project name</string>
     <string name="project_description">Project description</string>
     <string name="project_client">Client</string>
+    <string name="refresh">Refresh</string>
+    <string name="no_network_title">Using nTasks without a network connection.</string>
+    <string name="no_network_message">You can still edit your tasks and track time, but the changes will only be saved 
+        once you are connected to the internet. </string>
     <string-array name="task_status_array">
         <item>Urgent</item>
         <item>To-Do</item>
