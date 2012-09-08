@@ -37,4 +37,11 @@
         <item>Add Note</item>
         <item>Delete</item>
     </string-array>
+    <string-array name="project_categories">
+        <item>Work</item>
+        <item>School</item>
+        <item>Hobby</item>
+        <item>Housework</item>
+        <item>Other</item>
+    </string-array>
 </resources>

@@ -26,7 +26,7 @@ import com.parse.ParseUser;
 
 public class ProjectListFragment extends ListFragment {
 
-	private static String[] from = new String[] {"title", "client", "icon"};
+	private static String[] from = new String[] {"title", "client", "category"};
 	private static int[] to = new int[] {R.id.project_title, R.id.project_client, R.id.project_image};
 	
 	private static class ProjectItemBinder implements SimpleAdapter.ViewBinder {
@@ -35,8 +35,11 @@ public class ProjectListFragment extends ListFragment {
 				String textRepresentation) {
 			switch (view.getId()) {
 			case R.id.project_image:
-				// TODO: Create icons and map them to projects
-				((ImageView)view).setImageResource(R.drawable.ic_launcher);
+				int category = 4;
+				if (data != null) {
+					category = Integer.parseInt(textRepresentation);
+				}
+				((ImageView)view).setImageResource(Utils.getCategoryDrawable(category));
 				return true;
 			}
 			return false;

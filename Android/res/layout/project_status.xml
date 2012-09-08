@@ -29,7 +29,7 @@
         
         </LinearLayout>
         
-        <ImageView 
+        <Spinner 
             android:id="@+id/project_image"
             android:layout_width="64dp"
             android:layout_height="64dp"

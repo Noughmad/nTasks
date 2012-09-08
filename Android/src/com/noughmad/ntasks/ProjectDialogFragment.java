@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.Spinner;
 
 import com.parse.ParseObject;
 import com.parse.ParseUser;
@@ -37,15 +38,25 @@ public class ProjectDialogFragment extends DialogFragment {
 				(ViewGroup)getActivity().findViewById(R.id.project_dialog_layout)
 		);
 		
+		
+		CategoryAdapter adapter = new CategoryAdapter(getActivity(), android.R.layout.simple_spinner_item, getActivity().getResources().getStringArray(R.array.project_categories), true);
+		Spinner spinner = (Spinner) view.findViewById(R.id.project_category);
+		spinner.setAdapter(adapter);
+		int category = 4;
+		
 		if (mProject != null) {
 			((EditText)view.findViewById(R.id.project_title)).setText(mProject.getString("title"));
 			((EditText)view.findViewById(R.id.project_client)).setText(mProject.getString("client"));
+			if (mProject.has("category")) {
+				category = Math.min(Math.max(mProject.getInt("category"), 0), 4);
+			}
 			
 			builder.setTitle(mProject.getString("title"));
 		} else {
 			builder.setTitle(R.string.add_project);
 		}
 		
+		spinner.setSelection(category);
 		builder.setView(view);
 		builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {		
 			public void onClick(DialogInterface dialog, int which) {
@@ -59,6 +70,7 @@ public class ProjectDialogFragment extends DialogFragment {
             	}
         		mProject.put("title", title);
         		mProject.put("client", ((EditText)view.findViewById(R.id.project_client)).getText().toString());
+        		mProject.put("category", ((Spinner)view.findViewById(R.id.project_category)).getSelectedItemPosition());
         		mProject.saveEventually();
 			}
 		});

@@ -77,4 +77,16 @@ public class Utils {
 			return Long.toString(duration / 1000 / 60 / 60) + " h";
 		}
 	}
+	
+	public static int[] categoryDrawables = new int[] {
+		R.drawable.ic_category_office,
+		R.drawable.ic_category_school,
+		R.drawable.ic_category_hobby,
+		R.drawable.ic_category_housework,
+		R.drawable.ic_category_other
+	};
+	
+	public static int getCategoryDrawable(int position) {
+		return categoryDrawables[Math.max(Math.min(position, 4), 0)];
+	}
 }

@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ImageButton;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -169,8 +168,26 @@ public class TaskListAdapter extends BaseExpandableListAdapter {
 				((TextView)view.findViewById(R.id.project_time)).setText(Utils.formatDuration(0));				
 			}
 			
-			((ImageView)view.findViewById(R.id.project_image)).setImageResource(R.drawable.ic_launcher);
+			int category = 4; // Default to other
+			if (mProject.has("category")) {
+				category = mProject.getInt("category");
+			}
 			
+			CategoryAdapter adapter = new CategoryAdapter(mContext, android.R.layout.simple_spinner_item, mContext.getResources().getStringArray(R.array.project_categories), false);
+			Spinner spinner = (Spinner) view.findViewById(R.id.project_image);
+			spinner.setAdapter(adapter);
+			spinner.setSelection(category);
+			spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+				public void onItemSelected(AdapterView<?> spinner, View view,
+						int position, long id) {
+					mProject.put("category", position);
+					mProject.saveEventually();
+				}
+
+				public void onNothingSelected(AdapterView<?> spinner) {
+				}
+			});
 		} else {
 			final ParseObject task = mTasks.get(position-1);
 			if (view == null) {
