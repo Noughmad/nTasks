@@ -33,6 +33,7 @@ public class ProjectDetailActivity extends Activity {
 		super.onCreate(savedInstanceState);
 				
 		final ActionBar bar = getActionBar();
+		bar.setIcon(R.drawable.ic_launcher_light);
 		bar.setTitle("");
 		bar.setDisplayHomeAsUpEnabled(true);
 		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
