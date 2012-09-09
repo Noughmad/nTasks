@@ -181,6 +181,10 @@ public class TaskListAdapter extends BaseExpandableListAdapter {
 
 				public void onItemSelected(AdapterView<?> spinner, View view,
 						int position, long id) {
+
+					if (mProject.containsKey("category") && mProject.getInt("category") == position) {
+						return;
+					}
 					mProject.put("category", position);
 					mProject.saveEventually();
 				}
@@ -214,10 +218,16 @@ public class TaskListAdapter extends BaseExpandableListAdapter {
 	
 				public void onItemSelected(AdapterView<?> spinner, View item,
 						int position, long id) {
-					Log.d(TAG, "Setting status of " + task.getString("name") + " to " + Integer.toString(position) );
+					if (task.containsKey("status") && task.getInt("status") == position) {
+						return;
+					}
+					
 					task.put("status", position);
-					task.saveEventually();
 					notifyDataSetChanged();
+
+					Log.d(TAG, "Setting status of " + task.getString("name") + " to " + Integer.toString(position) );
+					task.saveEventually();
+					Log.d(TAG, "Done");
 				}
 	
 				public void onNothingSelected(AdapterView<?> spinner) {

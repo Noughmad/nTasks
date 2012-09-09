@@ -30,6 +30,8 @@ public class ProjectDetailActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+//		Debug.startMethodTracing("ntasks_detail_short");
 				
 		final ActionBar bar = getActionBar();
 		bar.setIcon(R.drawable.ic_launcher_light);
@@ -68,7 +70,13 @@ public class ProjectDetailActivity extends Activity {
 		}
 	}
 
-
+	/*
+	@Override
+	protected void onDestroy() {
+		Debug.stopMethodTracing();
+		super.onDestroy();
+	}
+	*/
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {

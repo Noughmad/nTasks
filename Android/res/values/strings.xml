@@ -26,6 +26,7 @@
     <string name="no_network_title">Using nTasks without a network connection.</string>
     <string name="no_network_message">You can still edit your tasks and track time, but the changes will only be saved 
         once you are connected to the internet. </string>
+    <string name="project_category">Category</string>
     <string-array name="task_status_array">
         <item>Urgent</item>
         <item>To-Do</item>
