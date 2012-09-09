@@ -82,7 +82,7 @@ public class Utils {
 		R.drawable.ic_category_office,
 		R.drawable.ic_category_school,
 		R.drawable.ic_category_hobby,
-		R.drawable.ic_category_housework,
+		R.drawable.ic_category_sport,
 		R.drawable.ic_category_other
 	};
 	

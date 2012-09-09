@@ -21,10 +21,10 @@ CATEGORY_SIZES = {
 
 CATEGORY_NAMES = {
     'office' : 'office',
-    'development' : 'housework',
     'education' : 'school',
     'graphics' : 'hobby',
-    'education-miscellaneous' : 'other'
+    'toys' : 'sport',
+    'education-miscellaneous' : 'other',
 }
 
 for infile, outfile in FILES.items():
