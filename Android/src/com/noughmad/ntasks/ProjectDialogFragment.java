@@ -31,7 +31,7 @@ public class ProjectDialogFragment extends DialogFragment {
 	public Dialog onCreateDialog(Bundle savedInstanceState) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 		
-		builder.setIcon(R.drawable.ic_launcher);
+		builder.setIcon(R.drawable.ic_launcher_light);
 		
 		final View view = getActivity().getLayoutInflater().inflate(
 				R.layout.project_dialog, 
