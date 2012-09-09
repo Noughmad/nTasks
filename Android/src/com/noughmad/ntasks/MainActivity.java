@@ -28,9 +28,7 @@ public class MainActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		
-		getActionBar().setIcon(R.drawable.ic_launcher_light);
-		
+				
 		if (ParseUser.getCurrentUser() == null) {
 			Log.i(TAG, "No current user, showing login dialog");
 			Intent i = new Intent(this, AccountActivity.class);

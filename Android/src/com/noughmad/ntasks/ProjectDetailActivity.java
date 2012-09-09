@@ -34,7 +34,6 @@ public class ProjectDetailActivity extends Activity {
 //		Debug.startMethodTracing("ntasks_detail_short");
 				
 		final ActionBar bar = getActionBar();
-		bar.setIcon(R.drawable.ic_launcher_light);
 		bar.setTitle("");
 		bar.setDisplayHomeAsUpEnabled(true);
 		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
