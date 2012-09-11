@@ -1,4 +1,5 @@
 import subprocess
+import shutil
 
 RESOLUTIONS = {
     'ldpi' : 36,
@@ -72,3 +73,9 @@ for infile, outfile in CATEGORY_NAMES.items():
             '/usr/share/icons/oxygen/%dx%d/categories/applications-%s.png' % (kdeSize, kdeSize, infile),
             'Android/res/drawable-%s/ic_category_large_%s.png' % (folder, outfile)
         ])
+        
+for res in DPI_VALUES:
+    for icon in ['refresh', 'add']:
+        args = (res, icon)
+        shutil.copyfile('/opt/android-sdk/platforms/android-16/data/res/drawable-%s/ic_menu_%s.png' % args,
+                        'Android/res/drawable-%s/ic_menu_%s.png' % args)

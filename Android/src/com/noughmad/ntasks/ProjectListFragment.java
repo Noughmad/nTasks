@@ -5,9 +5,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import android.app.Fragment;
-import android.app.FragmentTransaction;
+import android.app.AlertDialog;
 import android.app.ListFragment;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -82,13 +82,47 @@ public class ProjectListFragment extends ListFragment {
 		adapter.setViewBinder(new ProjectItemBinder());
 		setListAdapter(adapter);
 	}
-	
+
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		Log.i("ProjectListFragment", "Starting project detail activity for project " + position + " => "+ Utils.projects.get(position).getString("title"));
 		Intent intent = new Intent(getActivity(), ProjectDetailActivity.class);
 		intent.putExtra("project", position);
 		startActivity(intent);
+	}
+	
+	public void onListItemLongClick(ListView l, View v, final int position, long id) {
+		new AlertDialog.Builder(getActivity()).setItems(R.array.project_actions, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				switch (which) {
+				case 0: // Edit
+					Log.i("ProjectListFragment", "Starting project detail activity for project " + position + " => "+ Utils.projects.get(position).getString("title"));
+					Intent intent = new Intent(getActivity(), ProjectDetailActivity.class);
+					intent.putExtra("project", position);
+					startActivity(intent);
+					break;
+				case 1: // Delete
+					final ParseObject project = Utils.projects.get(position);
+					new AlertDialog.Builder(getActivity())
+						.setTitle("Really delete " + project.getString("title") + "?")
+						.setMessage("Deleting a project will delete all its tasks, and cannot be undone. Do you really want to delete " + project.getString("title") + "?")
+						.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int which) {
+								project.deleteEventually();
+								Utils.projects.remove(project);
+								updateProjectList();
+							}
+						})
+						.setNegativeButton(android.R.string.no, new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.dismiss();
+							}
+						})
+						.create().show();
+				}
+			}
+		}).create().show();
+
 	}
 
 	@Override
@@ -98,18 +132,7 @@ public class ProjectListFragment extends ListFragment {
 		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
 
 			public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-				FragmentTransaction ft = getActivity().getFragmentManager().beginTransaction();
-			    Fragment prev = getActivity().getFragmentManager().findFragmentByTag("project-dialog");
-			    if (prev != null) {
-			        ft.remove(prev);
-			    }
-			    ft.addToBackStack(null);
-
-			    // Create and show the dialog.
-			    
-			    ProjectDialogFragment newFragment = ProjectDialogFragment.create(Utils.projects.get(position));
-			    newFragment.show(ft, "project-dialog");
-			    
+				onListItemLongClick((ListView) parent, view, position, id);
 			    return true;
 			}});
 		
