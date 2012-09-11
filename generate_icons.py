@@ -7,17 +7,21 @@ RESOLUTIONS = {
     'xhdpi' : 96
 }
 
+CATEGORY_LARGE_RESOLUTIONS = {
+    'ldpi' : 48,
+    'mdpi' : 64,
+    'hdpi' : 96,
+    'xhdpi' : 128
+}
+
 FILES = {
     'ntasks.svg' : 'ic_launcher.png',
     'ntasks-light.svg' : 'ic_launcher_light.png'
 }
 
-CATEGORY_SIZES = {
-    'ldpi' : 48,
-    'mdpi' : 48,
-    'hdpi' : 64,
-    'xhdpi' : 128
-}
+DPI_VALUES = ['ldpi', 'mdpi', 'hdpi', 'xhdpi']
+
+KDE_ICON_SIZES = [16, 22, 24, 32, 48, 64, 128, 256]
 
 CATEGORY_NAMES = {
     'office' : 'office',
@@ -26,6 +30,15 @@ CATEGORY_NAMES = {
     'toys' : 'sport',
     'education-miscellaneous' : 'other',
 }
+
+def get_best_size(wanted, available):
+    for a in available:
+        if a >= wanted:
+            return a
+    return available[-1]
+
+def get_best_kde_size(wanted):
+    return get_best_size(wanted, KDE_ICON_SIZES)
 
 for infile, outfile in FILES.items():
     for folder, size in RESOLUTIONS.items():
@@ -40,12 +53,22 @@ for infile, outfile in FILES.items():
         ])
         
 for infile, outfile in CATEGORY_NAMES.items():
-    for new, orig in CATEGORY_SIZES.items():
-        newSize = RESOLUTIONS[new]
+    for folder in DPI_VALUES:
+        newSize = RESOLUTIONS[folder]
+        kdeSize = get_best_kde_size(newSize)
         subprocess.call([
             'convert',
             '-geometry',
             '%dx%d' % (newSize, newSize),
-            '/usr/share/icons/oxygen/%dx%d/categories/applications-%s.png' % (orig, orig, infile),
-            'Android/res/drawable-%s/ic_category_%s.png' % (new, outfile)
+            '/usr/share/icons/oxygen/%dx%d/categories/applications-%s.png' % (kdeSize, kdeSize, infile),
+            'Android/res/drawable-%s/ic_category_%s.png' % (folder, outfile)
+        ])
+        newSize = CATEGORY_LARGE_RESOLUTIONS[folder]
+        kdeSize = get_best_kde_size(newSize)
+        subprocess.call([
+            'convert',
+            '-geometry',
+            '%dx%d' % (newSize, newSize),
+            '/usr/share/icons/oxygen/%dx%d/categories/applications-%s.png' % (kdeSize, kdeSize, infile),
+            'Android/res/drawable-%s/ic_category_large_%s.png' % (folder, outfile)
         ])

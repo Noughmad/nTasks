@@ -77,7 +77,7 @@ public class Utils {
 			return Long.toString(duration / 1000 / 60 / 60) + " h";
 		}
 	}
-	
+
 	public static int[] categoryDrawables = new int[] {
 		R.drawable.ic_category_office,
 		R.drawable.ic_category_school,
@@ -86,7 +86,19 @@ public class Utils {
 		R.drawable.ic_category_other
 	};
 	
+	public static int[] largeCategoryDrawables = new int[] {
+		R.drawable.ic_category_large_office,
+		R.drawable.ic_category_large_school,
+		R.drawable.ic_category_large_hobby,
+		R.drawable.ic_category_large_sport,
+		R.drawable.ic_category_large_other
+	};
+
 	public static int getCategoryDrawable(int position) {
 		return categoryDrawables[Math.max(Math.min(position, 4), 0)];
+	}
+	
+	public static int getLargeCategoryDrawable(int position) {
+		return largeCategoryDrawables[Math.max(Math.min(position, 4), 0)];
 	}
 }

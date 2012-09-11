@@ -39,7 +39,7 @@ public class ProjectListFragment extends ListFragment {
 				if (data != null) {
 					category = Integer.parseInt(textRepresentation);
 				}
-				((ImageView)view).setImageResource(Utils.getCategoryDrawable(category));
+				((ImageView)view).setImageResource(Utils.getLargeCategoryDrawable(category));
 				return true;
 			}
 			return false;
