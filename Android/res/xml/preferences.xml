@@ -1,0 +1,16 @@
+    <PreferenceScreen 
+        xmlns:android="http://schemas.android.com/apk/res/android">
+        <CheckBoxPreference 
+            android:defaultValue="true" 
+            android:title="Show offline warning" 
+            android:summaryOff="No warning is shown" 
+            android:summaryOn="Warning is shown" 
+            android:key="warnNoNetwork"/>
+        <PreferenceCategory android:title="My Account">
+            <com.noughmad.ntasks.AccountLinkPreference
+                android:defaultValue="false"
+                android:title="Link with Twitter"
+                android:summaryOff="Not linked"
+                android:key="linkWithTwitter" />
+        </PreferenceCategory>
+    </PreferenceScreen>

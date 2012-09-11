@@ -27,6 +27,7 @@
     <string name="no_network_message">You can still edit your tasks and track time, but the changes will only be saved 
         once you are connected to the internet. </string>
     <string name="project_category">Category</string>
+    <string name="settings">Settings</string>
     <string-array name="task_status_array">
         <item>Urgent</item>
         <item>To-Do</item>
