@@ -43,7 +43,7 @@ public class ProjectDetailActivity extends Activity {
 			titles.add(project.getString("title"));
 		}
 		
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, titles);
+		ArrayAdapter<String> adapter = new ArrayAdapter<String>(bar.getThemedContext(), android.R.layout.simple_spinner_item, titles);
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		bar.setListNavigationCallbacks(adapter, new ActionBar.OnNavigationListener() {
 			
