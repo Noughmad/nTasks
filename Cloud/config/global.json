@@ -1,0 +1,14 @@
+{
+    "applications": {
+        "_default": {
+            "link": "nTasks"
+        }, 
+        "nTasks": {
+            "applicationId": "D9klw2LrpZu2uSBFcn1M2mXMnadIQoKPht0RsuDY", 
+            "masterKey": "FR3RBinRpdQgqGNMIeaFNwaUBNivmu8vIYU6DFa5"
+        }
+    }, 
+    "global": {
+        "parseVersion": "1.0.23"
+    }
+}

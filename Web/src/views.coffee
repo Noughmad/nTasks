@@ -450,13 +450,9 @@
             $.jqplot.config.enablePlugins = true
 
             console.log 'Init StatsView'
-            query = new Parse.Query(Task)
-            query.equalTo 'user', Parse.User.current()
-            @tasks = query.collection()
-            @tasks.fetch
-                success: (tasks) =>
-                    console.log 'Success getting tasks'
-                    @setTasks(tasks)
+            Parse.Cloud.run 'projectsWithDurations', {},
+                success: (results) =>
+                    @showStats results
                 error: (error) ->
                     console.log error.message
             @render()
@@ -464,20 +460,13 @@
         render: ->
             @$el.html @template({})
 
-        setTasks: (tasks) ->
-            data = {}
-            tasks.each (task) ->
-                p = task.get 'project'
-                if not data.hasOwnProperty(p.id)
-                    data[p.id] = 0
-                data[p.id] = data[p.id] + task.get 'duration'
+        showStats: (results) ->
+            console.log results
+            values = (Math.round( (if p.duration then p.duration else 0) / MILI_PER_HOUR * 10) / 10 for p in results)
+            labels = (p.title for p in results)
 
-            values = []
-            labels = []
-            for key, value of data
-                p = projects.get(key)
-                labels.push if p then p.get 'title' else key
-                values.push Math.round(value / MILI_PER_HOUR * 10) / 10
+            console.log values
+            console.log labels
 
             $.jqplot 'plot-placeholder', [values],
                 animate: true
