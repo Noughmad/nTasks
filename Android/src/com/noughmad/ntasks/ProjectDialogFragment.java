@@ -72,6 +72,16 @@ public class ProjectDialogFragment extends DialogFragment {
         		mProject.put("client", ((EditText)view.findViewById(R.id.project_client)).getText().toString());
         		mProject.put("category", ((Spinner)view.findViewById(R.id.project_category)).getSelectedItemPosition());
         		mProject.saveEventually();
+        		
+        		ProjectListFragment list = (ProjectListFragment) getActivity().getFragmentManager().findFragmentByTag("project-list");
+        		if (list != null) {
+        			list.updateProjectList();
+        		}
+        		
+        		ProjectDetailFragment detail = (ProjectDetailFragment) getActivity().getFragmentManager().findFragmentByTag("project-detail-" + mProject.getObjectId());
+        		if (detail != null) {
+        			detail.updateTaskList();
+        		}
 			}
 		});
 		builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {

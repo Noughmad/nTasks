@@ -10,9 +10,9 @@ import com.parse.ParseTwitterUtils;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 
-public class AccountLinkPreference extends CheckBoxPreference {
+public class TwitterLinkPreference extends CheckBoxPreference {
 
-	public AccountLinkPreference(Context context, AttributeSet attrs) {
+	public TwitterLinkPreference(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		
 		ParseUser user = ParseUser.getCurrentUser();

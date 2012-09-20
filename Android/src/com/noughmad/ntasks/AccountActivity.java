@@ -9,6 +9,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.parse.ParseFacebookUtils;
+
 public class AccountActivity extends Activity implements LoginFragment.OnLoginListener, RegisterFragment.OnRegisterListener {
 
 	@Override
@@ -110,5 +112,11 @@ public class AccountActivity extends Activity implements LoginFragment.OnLoginLi
 		Intent i = getIntent();
 		setResult(RESULT_OK, i);
 		finish();
+	}
+	
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		ParseFacebookUtils.finishAuthentication(requestCode, resultCode, data);
 	}
 }

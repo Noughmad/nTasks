@@ -405,6 +405,16 @@
         events:
             'submit form.login-form': 'logIn'
             'submit form.signup-form': 'signUp'
+            'click button.login-facebook' : 'logInWithFacebook'
+
+        logInWithFacebook: ->
+            console.log "Trying to log in with FB"
+            Parse.FacebookUtils.logIn null,
+                success: (user) ->
+                    state.set 'user', user
+                error: (user, error) ->
+                    console.log "User cancelled the Facebook login or did not fully authorize."
+            false
 
         initialize: ->
             _.bindAll @

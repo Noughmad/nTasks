@@ -7,7 +7,12 @@
             android:summaryOn="Warning is shown" 
             android:key="warnNoNetwork"/>
         <PreferenceCategory android:title="My Account">
-            <com.noughmad.ntasks.AccountLinkPreference
+            <com.noughmad.ntasks.FacebookLinkPreference
+                android:defaultValue="false"
+                android:title="Link with Facebook"
+                android:summaryOff="Not linked"
+                android:key="linkWithFacebook" />
+            <com.noughmad.ntasks.TwitterLinkPreference
                 android:defaultValue="false"
                 android:title="Link with Twitter"
                 android:summaryOff="Not linked"

@@ -107,6 +107,7 @@ public class MainActivity extends Activity {
 			if (fragment != null) {
 				fragment.updateProjectList();
 			}
+			break;
 			
 		case R.id.menu_settings:
 			Intent intent = new Intent(this, SettingsActivity.class);

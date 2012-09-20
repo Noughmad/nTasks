@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import android.app.AlertDialog;
+import android.app.FragmentTransaction;
 import android.app.ListFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -96,10 +97,9 @@ public class ProjectListFragment extends ListFragment {
 			public void onClick(DialogInterface dialog, int which) {
 				switch (which) {
 				case 0: // Edit
-					Log.i("ProjectListFragment", "Starting project detail activity for project " + position + " => "+ Utils.projects.get(position).getString("title"));
-					Intent intent = new Intent(getActivity(), ProjectDetailActivity.class);
-					intent.putExtra("project", position);
-					startActivity(intent);
+					FragmentTransaction ft = getFragmentManager().beginTransaction();
+				    ProjectDialogFragment newFragment = ProjectDialogFragment.create(Utils.projects.get(position));
+				    newFragment.show(ft, "project-dialog");
 					break;
 				case 1: // Delete
 					final ParseObject project = Utils.projects.get(position);
