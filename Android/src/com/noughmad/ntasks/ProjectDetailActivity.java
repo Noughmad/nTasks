@@ -1,28 +1,28 @@
 package com.noughmad.ntasks;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.ContentProviderClient;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-
-import com.parse.ParseObject;
+import android.widget.SimpleCursorAdapter;
 
 public class ProjectDetailActivity extends Activity {
 
-	private ParseObject mProject;
+	private long mProjectId;
 	private static final String TAG = "ProjectDetailActivity";
 
 
@@ -38,19 +38,29 @@ public class ProjectDetailActivity extends Activity {
 		bar.setDisplayHomeAsUpEnabled(true);
 		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
 		
-		List<String> titles = new ArrayList<String>();
-		for (ParseObject project : Utils.projects) {
-			titles.add(project.getString("title"));
+		String[] from = new String[] {Database.KEY_PROJECT_TITLE, Database.ID};
+		int[] to = new int[] {android.R.id.text1};
+		
+		Uri uri = Uri.withAppendedPath(Database.BASE_URI, Database.PROJECT_TABLE_NAME);
+		ContentProviderClient client = getContentResolver().acquireContentProviderClient(uri);
+		Cursor cursor;
+		try {
+			cursor = client.query(uri, from, null, null, null);
+		} catch (RemoteException e1) {
+			cursor = null;
+			e1.printStackTrace();
 		}
 		
-		ArrayAdapter<String> adapter = new ArrayAdapter<String>(bar.getThemedContext(), android.R.layout.simple_spinner_item, titles);
+		@SuppressWarnings("deprecation")
+		SimpleCursorAdapter adapter = new SimpleCursorAdapter(bar.getThemedContext(), android.R.layout.simple_spinner_item, cursor, from, to);
+		
 		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 		bar.setListNavigationCallbacks(adapter, new ActionBar.OnNavigationListener() {
 			
 			public boolean onNavigationItemSelected(int itemPosition, long itemId) {
 				try {
 					Log.i(TAG, "Navigation item " + itemPosition + " selected");
-					showProject(Utils.projects.get(itemPosition));
+					showProject(itemId);
 				} catch (IndexOutOfBoundsException e) {
 					return false;
 				}
@@ -96,45 +106,37 @@ public class ProjectDetailActivity extends Activity {
 			});
 			builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
-					ParseObject task = new ParseObject("Task");
-					task.put("project", mProject);
-					task.put("name", edit.getText().toString());
-					task.put("status", 1);
-					// The task will be saved by the TaskListAdapter, no need to save it here
-					
-					ProjectDetailFragment fragment = (ProjectDetailFragment)getFragmentManager().findFragmentByTag("project-detail-" + mProject.getObjectId());
-					if (fragment != null) {
-						Log.d(TAG, "Found project detail fragment for " + mProject.getString("title"));
-						TaskListAdapter adapter = (TaskListAdapter)fragment.getListView().getExpandableListAdapter();
-						adapter.mTasks.add(task);
-						adapter.notifyDataSetChanged();
-					} else {
-						Log.w(TAG, "Could not find project detail fragment for project " + mProject.getString("title"));
-						task.saveEventually();
+					Uri uri = Uri.withAppendedPath(Database.BASE_URI, Database.TASK_TABLE_NAME);
+					ContentProviderClient client = getContentResolver().acquireContentProviderClient(uri);
+					ContentValues values = new ContentValues();
+					values.put(Database.KEY_TASK_PROJECT, mProjectId);
+					values.put(Database.KEY_TASK_NAME, edit.getText().toString());
+					values.put(Database.KEY_TASK_STATUS, 1);
+					try {
+						client.insert(uri, values);
+					} catch (RemoteException e) {
+						e.printStackTrace();
 					}
+					client.release();
 				}
 			});
 			builder.create().show();
 		} else if (item.getItemId() == R.id.menu_refresh) {
-			ProjectDetailFragment fragment = (ProjectDetailFragment)getFragmentManager().findFragmentByTag("project-detail-" + mProject.getObjectId());
-			if (fragment != null) {
-				fragment.updateTaskList();
-			}
+			// TODO: Replace refresh with sync
 		}
 		return super.onOptionsItemSelected(item);
 	}
 	
-	public void showProject(ParseObject project) {	
-		mProject = project;
-		String tag = "project-detail-" + project.getObjectId();
-		Log.i(TAG, "Showing project " + project.getString("title"));
+	public void showProject(long projectId) {	
+		mProjectId = projectId;
+		String tag = "project-detail-" + projectId;
 		
 		FragmentManager fm = getFragmentManager();
 		ProjectDetailFragment tasksFragment = (ProjectDetailFragment) fm.findFragmentByTag(tag);
 		
 		if (tasksFragment == null) {
 			Log.i(TAG, "Creating a new fragment for the project");
-			tasksFragment = ProjectDetailFragment.create(project);
+			tasksFragment = ProjectDetailFragment.create(projectId);
 		}
 
 		Fragment currentFragment = fm.findFragmentById(android.R.id.content);

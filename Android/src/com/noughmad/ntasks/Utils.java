@@ -5,47 +5,27 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
+import android.app.AlertDialog;
+import android.content.ContentProviderClient;
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Color;
+import android.net.Uri;
+import android.os.RemoteException;
+import android.util.Log;
+import android.widget.EditText;
 
 import com.parse.ParseObject;
 
 public class Utils {
-	public static void startTracking(ParseObject task) {
-		if (activeTask != null && activeTask != task) {
-			stopTracking(activeTask);
-		}
-		
-		task.put("active", true);
-		task.put("lastStart", new Date());
-		task.saveEventually();
-		
-		activeTask = task;
-	}
+	private final static String TAG = "Utils";
 	
-	public static void stopTracking(ParseObject task) {
-		Date start = task.getDate("lastStart");
-		Date end = new Date();
-		long duration = end.getTime() - start.getTime();
-		
-		task.put("active", false);
-		task.increment("duration", duration);
-		
-		JSONObject unit = new JSONObject();
-		try {
-			unit.put("start", start);
-			unit.put("end", end);
-			unit.put("duration", duration);
-		} catch (JSONException e) {
-			e.printStackTrace();
-		}
-		task.add("units", unit);
-		task.saveEventually();
-		
-		activeTask = null;
-	}
+	public static int TRACKING_NOTIFICATION = 4;
+	public static int SYNC_NOTIFICATION = 6;
 	
 	public static List<ParseObject> projects;
 	public static ParseObject activeTask = null;
@@ -100,5 +80,99 @@ public class Utils {
 	
 	public static int getLargeCategoryDrawable(int position) {
 		return largeCategoryDrawables[Math.max(Math.min(position, 4), 0)];
+	}
+	
+	public static void addNote(final long id, final Context context) {
+		
+		AlertDialog.Builder builder = new AlertDialog.Builder(context);
+		final EditText edit = new EditText(context);
+		edit.setSingleLine(false);
+		builder.setView(edit);
+		
+		builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				ContentValues values = new ContentValues();
+				values.put(Database.KEY_NOTE_TEXT, edit.getText().toString());
+				values.put(Database.KEY_NOTE_TASK, id);
+				
+				Uri uri = Uri.withAppendedPath(Database.BASE_URI, Database.NOTE_TABLE_NAME);
+				ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(uri);
+				try {
+					client.insert(uri, values);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+				client.release();
+			}
+		});
+		
+		builder.create().show();
+	}
+	
+	public static void startTracking(long taskId, Context context) {
+		Log.i(TAG, "startTracking(): " + taskId);
+		
+		Uri uri = ContentUris.withAppendedId(Uri.withAppendedPath(Database.BASE_URI, Database.TASK_TABLE_NAME), taskId);
+		ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(uri);
+		ContentValues values = new ContentValues();
+		values.put(Database.KEY_TASK_ACTIVE, 1);
+		values.put(Database.KEY_TASK_LASTSTART, System.currentTimeMillis());
+		try {
+			client.update(uri, values, null, null);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		
+		Intent intent = new Intent(context.getApplicationContext(), TimeTrackingService.class);
+		intent.putExtra("taskId", taskId);
+		context.startService(intent);
+	}
+	
+	public static void stopTracking(Context context) {
+		Uri uri = Uri.withAppendedPath(Database.BASE_URI, Database.TASK_TABLE_NAME);
+		ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(uri);
+		try {
+			Cursor cursor = client.query(uri, new String[] {Database.ID, Database.KEY_TASK_LASTSTART}, "active = 1", null, null);
+			if (cursor.moveToFirst()) {
+				stopTracking(cursor.getLong(0), cursor.getLong(1), context);
+				cursor.close();
+				client.release();
+				return;
+			}
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		
+		client.release();
+	}
+	
+	public static void stopTracking(long taskId, long lastStart, Context context) {
+		Log.i(TAG, "stopTracking(): " + taskId);
+		ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(Database.BASE_URI);
+		ContentValues unitValues = new ContentValues();
+		long currentTime = System.currentTimeMillis();
+		
+		unitValues.put(Database.KEY_WORKUNIT_START, lastStart);
+		unitValues.put(Database.KEY_WORKUNIT_END, currentTime);
+		unitValues.put(Database.KEY_WORKUNIT_DURATION, currentTime - lastStart);
+		Uri unitUri = Uri.withAppendedPath(Database.BASE_URI, Database.WORKUNIT_TABLE_NAME);
+		try {
+			client.insert(unitUri, unitValues);
+		} catch (RemoteException e1) {
+			e1.printStackTrace();
+		}
+		
+		Uri taskUri = ContentUris.withAppendedId(Uri.withAppendedPath(Database.BASE_URI, Database.TASK_TABLE_NAME), taskId);
+
+		ContentValues values = new ContentValues();
+		values.put(Database.KEY_TASK_ACTIVE, 0);
+		try {
+			client.update(taskUri, values, null, null);
+		} catch (RemoteException e) {
+			e.printStackTrace();
+		}
+		
+		Intent intent = new Intent(context.getApplicationContext(), TimeTrackingService.class);
+		context.stopService(intent);
 	}
 }

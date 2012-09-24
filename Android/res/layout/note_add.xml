@@ -1,0 +1,17 @@
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:id="@+id/task_item_layout"
+        >
+
+        <Button
+		    android:id="@+id/note_add_button"
+		    android:layout_width="wrap_content"
+		    android:layout_height="wrap_content"
+		    style="?android:attr/borderlessButtonStyle"
+		    android:text="@string/note_add"
+		    android:drawableLeft="@android:drawable/ic_menu_add" />
+               
+    </LinearLayout>

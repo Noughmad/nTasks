@@ -9,6 +9,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/project_name"
+            android:singleLine="true"
             android:ems="10" >
 
             <requestFocus />
@@ -20,6 +21,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/project_title"
             android:hint="@string/project_client"
+            android:singleLine="true"
             android:ems="10" >
         </EditText>
         

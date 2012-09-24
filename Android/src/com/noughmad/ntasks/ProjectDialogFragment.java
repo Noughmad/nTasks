@@ -2,29 +2,36 @@ package com.noughmad.ntasks;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.ContentProviderClient;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.Spinner;
 
-import com.parse.ParseObject;
-import com.parse.ParseUser;
-
 
 public class ProjectDialogFragment extends DialogFragment {
 
-	private ParseObject mProject;
-
-	public static ProjectDialogFragment create(ParseObject project) {
+	private long mProjectId;
+	private boolean mExisting;
+	
+	public static ProjectDialogFragment create(long id) {
 		ProjectDialogFragment dialog = new ProjectDialogFragment();
-		dialog.mProject = project;
+		dialog.mExisting = true;
+		dialog.mProjectId = id;
 		return dialog;
 	}
 	
 	public static ProjectDialogFragment create() {
-		return create(null);
+		ProjectDialogFragment dialog = new ProjectDialogFragment();
+		dialog.mExisting = false;
+		return dialog;
 	}
 	
 	@Override
@@ -42,16 +49,22 @@ public class ProjectDialogFragment extends DialogFragment {
 		CategoryAdapter adapter = new CategoryAdapter(getActivity(), android.R.layout.simple_spinner_item, getActivity().getResources().getStringArray(R.array.project_categories), true);
 		Spinner spinner = (Spinner) view.findViewById(R.id.project_category);
 		spinner.setAdapter(adapter);
-		int category = 4;
 		
-		if (mProject != null) {
-			((EditText)view.findViewById(R.id.project_title)).setText(mProject.getString("title"));
-			((EditText)view.findViewById(R.id.project_client)).setText(mProject.getString("client"));
-			if (mProject.has("category")) {
-				category = Math.min(Math.max(mProject.getInt("category"), 0), 4);
-			}
+		int category = 4;
+		if (mExisting) {
+			Database db = new Database(getActivity());
+			Cursor cursor = db.getProject(mProjectId, new String[] {
+					Database.KEY_PROJECT_TITLE, 
+					Database.KEY_PROJECT_CLIENT, 
+					Database.KEY_PROJECT_CATEGORY});
 			
-			builder.setTitle(mProject.getString("title"));
+			String title = cursor.getString(0);
+			
+			((EditText)view.findViewById(R.id.project_title)).setText(title);
+			((EditText)view.findViewById(R.id.project_client)).setText(cursor.getString(1));
+			category = Math.min(Math.max(cursor.getInt(2), 0), 4);
+			
+			builder.setTitle(title);
 		} else {
 			builder.setTitle(R.string.add_project);
 		}
@@ -64,24 +77,30 @@ public class ProjectDialogFragment extends DialogFragment {
 				if (title.isEmpty()) {
 					return;
 				}
-				if (mProject == null) {
-            		mProject = new ParseObject("Project");
-            		mProject.put("user", ParseUser.getCurrentUser());
+				ContentValues values = new ContentValues();
+				values.put(Database.KEY_PROJECT_TITLE, title);
+        		values.put(Database.KEY_PROJECT_CLIENT, ((EditText)view.findViewById(R.id.project_client)).getText().toString());
+        		values.put(Database.KEY_PROJECT_CATEGORY, ((Spinner)view.findViewById(R.id.project_category)).getSelectedItemPosition());
+				
+				Uri uri = Uri.withAppendedPath(Database.BASE_URI, Database.PROJECT_TABLE_NAME);
+				if (mExisting) {
+					uri = ContentUris.withAppendedId(uri, mProjectId);
+				}
+				ContentProviderClient client = getActivity().getContentResolver().acquireContentProviderClient(uri);
+				if (mExisting) {
+					try {
+						client.update(uri, values, null, null);
+					} catch (RemoteException e) {
+						e.printStackTrace();
+					}
+            	} else {
+            		try {
+						client.insert(uri, values);
+					} catch (RemoteException e) {
+						e.printStackTrace();
+					}
             	}
-        		mProject.put("title", title);
-        		mProject.put("client", ((EditText)view.findViewById(R.id.project_client)).getText().toString());
-        		mProject.put("category", ((Spinner)view.findViewById(R.id.project_category)).getSelectedItemPosition());
-        		mProject.saveEventually();
-        		
-        		ProjectListFragment list = (ProjectListFragment) getActivity().getFragmentManager().findFragmentByTag("project-list");
-        		if (list != null) {
-        			list.updateProjectList();
-        		}
-        		
-        		ProjectDetailFragment detail = (ProjectDetailFragment) getActivity().getFragmentManager().findFragmentByTag("project-detail-" + mProject.getObjectId());
-        		if (detail != null) {
-        			detail.updateTaskList();
-        		}
+				client.release();
 			}
 		});
 		builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {

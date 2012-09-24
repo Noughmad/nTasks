@@ -28,6 +28,12 @@
         once you are connected to the internet. </string>
     <string name="project_category">Category</string>
     <string name="settings">Settings</string>
+    <string name="note_add">Add Note</string>
+    
+    <string name="permission_write">Edit Projects and Tasks</string>
+    <string name="permission_write_description">Allows the application to modify all nTasks data</string>
+    <string name="notification_sync_text">Synchronizing data with server...</string>
+    
     <string-array name="task_status_array">
         <item>Urgent</item>
         <item>To-Do</item>

@@ -1,52 +1,48 @@
 package com.noughmad.ntasks;
 
-import java.util.ArrayList;
-
 import android.app.AlertDialog;
 import android.app.Fragment;
+import android.app.LoaderManager;
+import android.content.ContentProviderClient;
+import android.content.ContentUris;
+import android.content.CursorLoader;
 import android.content.DialogInterface;
+import android.content.Loader;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ExpandableListView;
 
-import com.parse.ParseObject;
-
-public class ProjectDetailFragment extends Fragment {
+public class ProjectDetailFragment extends Fragment 
+	implements LoaderManager.LoaderCallbacks<Cursor> {
 	
-	private ParseObject mProject;
+	private long mProjectId;
 	private TaskListAdapter mAdapter;
 
-	public static ProjectDetailFragment create(ParseObject project) {
+	public static ProjectDetailFragment create(long projectId) {
 		ProjectDetailFragment f = new ProjectDetailFragment();
-		f.mProject = project;
+		f.mProjectId = projectId;
 		return f;
 	}
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Log.d("ProjectDetailFragment", "onCreate(): " + mProject + ", " + mAdapter);
-		if (mProject == null && savedInstanceState.containsKey("projectId")) {
-			String projectId = savedInstanceState.getString("projectId");
-			for (ParseObject project : Utils.projects) {
-				if (project.getObjectId().equals(projectId)) {
-					mProject = project;
-					break;
-				}
-			}
+		if (savedInstanceState != null && savedInstanceState.containsKey("projectId")) {
+			mProjectId = savedInstanceState.getLong("projectId");
 		}
-		Log.d("ProjectDetailFragment", "onCreate(): " + mProject + ", " + mAdapter);
 	}
 	
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
-		outState.putString("projectId", mProject.getObjectId());
+		outState.putLong("projectId", mProjectId);
 	}
 
 	@Override
@@ -54,9 +50,6 @@ public class ProjectDetailFragment extends Fragment {
 			Bundle savedInstanceState) {
 		Log.d("ProjectDetailFragment", "onCreateView(): " + mAdapter);
 		ExpandableListView v = new ExpandableListView(inflater.getContext());
-		if (mAdapter != null) {
-			v.setAdapter(mAdapter);
-		}
 		return v;
 	}
 
@@ -65,82 +58,69 @@ public class ProjectDetailFragment extends Fragment {
 		super.onActivityCreated(savedInstanceState);
 
 		Log.d("ProjectDetailFragment", "onActivityCreated(): " + mAdapter);
+		
+		
+		mAdapter = new TaskListAdapter(null, getActivity());
+		getListView().setAdapter(mAdapter);
+		getLoaderManager().initLoader(0, null, this);
 
-		if (mAdapter == null) {
-			
-			mAdapter = new TaskListAdapter(getActivity(), mProject);
-			getListView().setAdapter(mAdapter);
-			
-			getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+		getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 	
-				public boolean onItemLongClick(AdapterView<?> view, View item,
-						final int position, long id) {
-					final ParseObject task = (ParseObject) getListView().getItemAtPosition(position);
-					if (task == null) {
-						return false;
-					}
-					AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-					builder.setItems(R.array.task_actions, new DialogInterface.OnClickListener() {
-						
-						public void onClick(DialogInterface dialog, int which) {
-							switch (which) {
-							case 0: // Rename
-								// TODO;
-								break;
-							case 1: // Add Note
-								addNote(task);
-								break;
-							case 2: // Delete
-								TaskListAdapter adapter = (TaskListAdapter) getListView().getExpandableListAdapter();
-								adapter.mTasks.remove(task);
-								adapter.notifyDataSetChanged();
-								task.deleteEventually();
+			public boolean onItemLongClick(AdapterView<?> view, View item,
+					int position, final long id) {
+				
+				AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+				builder.setItems(R.array.task_actions, new DialogInterface.OnClickListener() {
+					
+					public void onClick(DialogInterface dialog, int which) {
+						switch (which) {
+						case 0: // Rename
+							// TODO;
+							break;
+						case 1: // Add Note
+							Utils.addNote(id, getActivity());
+							break;
+						case 2: // Delete
+							Uri uri = ContentUris.withAppendedId(Uri.withAppendedPath(Database.BASE_URI, Database.TASK_TABLE_NAME), id);
+							ContentProviderClient client = getActivity().getContentResolver().acquireContentProviderClient(uri);
+							try {
+								client.delete(uri, null, null);
+							} catch (RemoteException e) {
+								e.printStackTrace();
 							}
+							client.release();
 						}
-					});
-					builder.create().show();
-					return true;
-				}
-			});
-		} else {
-			updateTaskList();
-		}
+					}
+				});
+				builder.create().show();
+				return true;
+			}
+		});
 	}
 	
 	ExpandableListView getListView() {
 		return (ExpandableListView) getView();
 	}
-	
-	private void addNote(final ParseObject task) {
-		final ParseObject note = new ParseObject("Note");
-		note.put("task", task);
+
+	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+		Uri uri = Uri.withAppendedPath(Database.BASE_URI, Database.TASK_TABLE_NAME);
+
+		// Columns: _id, name, status, duration, active, lastStart
+		String[] projection = new String[] {Database.ID, Database.KEY_TASK_NAME, 
+				Database.KEY_TASK_STATUS, Database.KEY_TASK_DURATION, 
+				Database.KEY_TASK_ACTIVE, Database.KEY_TASK_LASTSTART};
 		
-		AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-		final EditText edit = new EditText(getActivity());
-		edit.setSingleLine(false);
-		builder.setView(edit);
+		String selection = Database.KEY_TASK_PROJECT + " = ?";
+		String[] selectionArgs = new String[] {Long.toString(mProjectId)};
 		
-		builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int which) {
-				note.put("text", edit.getText().toString());
-				note.saveEventually();
-				
-				TaskListAdapter adapter = (TaskListAdapter) getListView().getExpandableListAdapter();
-				if (adapter != null && adapter.mNotes != null) {
-					if (!adapter.mNotes.containsKey(task.getObjectId())) {
-						adapter.mNotes.put(task.getObjectId(), new ArrayList<ParseObject>());
-					}
-					adapter.mNotes.get(task.getObjectId()).add(note);
-					adapter.notifyDataSetChanged();
-				}
-			}
-		});
-		
-		builder.create().show();
+		return new CursorLoader(getActivity(), uri, projection, selection, selectionArgs, null);
 	}
-	
-	public void updateTaskList() {
-		TaskListAdapter adapter = (TaskListAdapter) getListView().getExpandableListAdapter();
-		adapter.updateTasks(false);
+
+	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+		Log.i("ProjectDetailFragment", "Loaded cursor: " + cursor);
+		mAdapter.changeCursor(cursor);
+	}
+
+	public void onLoaderReset(Loader<Cursor> loader) {
 	}
 }
