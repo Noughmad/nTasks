@@ -1,5 +1,8 @@
 package com.noughmad.ntasks;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.LoaderManager;
@@ -9,7 +12,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
@@ -32,6 +34,7 @@ public class TaskListAdapter extends CursorTreeAdapter
 
 	private final static String TAG = "TaskListAdapter";
 	
+	
 	// Zero is reserved for children
 	private final static int VIEW_TYPE_HEADER = 1;
 	private final static int VIEW_TYPE_TASK = 2;
@@ -42,10 +45,12 @@ public class TaskListAdapter extends CursorTreeAdapter
 	private final static int CHILD_TYPE_COUNT = 3;
 	
 	private Activity mActivity;
+	private Map<Integer, Cursor> mChildrenCursors;
 	
 	public TaskListAdapter(Cursor cursor, Activity activity) {
 		super(cursor, activity);
 		mActivity = activity;
+		mChildrenCursors = new HashMap<Integer,Cursor>();
 	}
 
 
@@ -97,12 +102,11 @@ public class TaskListAdapter extends CursorTreeAdapter
 		}
 		
 		final boolean active = cursor.getInt(4) != 0;
-		final long lastStart = cursor.getLong(5);
+		view.setActivated(active);
 		button.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
 				ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(taskUri);
-				long currentTime = System.currentTimeMillis();
 				if (active) {
 					Utils.stopTracking(context);
 				} else {
@@ -121,8 +125,15 @@ public class TaskListAdapter extends CursorTreeAdapter
 
 	@Override
 	protected Cursor getChildrenCursor(Cursor groupCursor) {
-		mActivity.getLoaderManager().initLoader(groupCursor.getPosition(), null, this);
-		return null;
+		int pos = groupCursor.getPosition();
+		if (mChildrenCursors.containsKey(pos) && mChildrenCursors.get(pos) != null) {
+			return mChildrenCursors.get(pos);
+		} else {
+			Bundle args = new Bundle();
+			args.putLong("taskId", groupCursor.getLong(0));
+			mActivity.getLoaderManager().initLoader(groupCursor.getPosition(), args, this);
+			return null;
+		}
 	}
 
 	@Override
@@ -181,15 +192,18 @@ public class TaskListAdapter extends CursorTreeAdapter
 	}
 
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+		Log.i(TAG, "Creating cursor for id " + id);
 		CursorLoader loader = new CursorLoader(mActivity);
 		loader.setUri(Uri.withAppendedPath(Database.BASE_URI, Database.NOTE_TABLE_NAME));
 		loader.setProjection(new String[] {Database.ID, Database.KEY_NOTE_TEXT, Database.KEY_NOTE_TASK});
 		loader.setSelection(Database.KEY_NOTE_TASK + " = ?");
-		loader.setSelectionArgs(new String[] {args.getString("task")});
+		loader.setSelectionArgs(new String[] {Long.toString(args.getLong("taskId"))});
 		return loader;
 	}
 
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+		Log.i(TAG, "Loaded cursor for id " + loader.getId());
+		mChildrenCursors.put(loader.getId(), cursor);
 		setChildrenCursor(loader.getId(), cursor);
 	}
 

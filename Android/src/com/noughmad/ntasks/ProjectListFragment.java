@@ -44,17 +44,17 @@ public class ProjectListFragment extends ListFragment
 		}
 		
 	}
-	
-	public void updateProjectList()
-	{
-		
-	}
 
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
-		Intent intent = new Intent(getActivity(), ProjectDetailActivity.class);
-		intent.putExtra("projectId", id);
-		startActivity(intent);
+		if (getResources().getBoolean(R.bool.two_pane_layout)) {
+			ProjectDetailFragment fragment = (ProjectDetailFragment) getActivity().getFragmentManager().findFragmentById(R.id.project_detail);
+			fragment.showProject(id);
+		} else {
+			Intent intent = new Intent(getActivity(), ProjectDetailActivity.class);
+			intent.putExtra("projectId", id);
+			startActivity(intent);
+		}
 	}
 	
 	public void onListItemLongClick(ListView l, View v, int position, final long id) {

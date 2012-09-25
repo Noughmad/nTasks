@@ -22,8 +22,6 @@ public class MainActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		
-		showProjects();
 	}
 
 	@Override
@@ -81,22 +79,5 @@ public class MainActivity extends Activity {
 	
 	private void startSync() {
 		startService(new Intent(this, SyncService.class));
-	}
-
-	private void showProjects() {
-		Log.d(TAG, "showProjects()");
-		FragmentManager fm = getFragmentManager();
-		FragmentTransaction ft = fm.beginTransaction();
-		Fragment fragment = fm.findFragmentByTag("project-list");
-		if (fragment != null) {
-			ft.attach(fragment);
-			Log.d(TAG, "Re-using existing fragment");
-		} else {
-			ft.add(R.id.main_container, new ProjectListFragment(), "project-list");
-			Log.d(TAG, "Created a ProjectListFragment");
-		}
-		ft.commit();
-		
-		Log.d(TAG, "Created a fragment transaction");
 	}
 }

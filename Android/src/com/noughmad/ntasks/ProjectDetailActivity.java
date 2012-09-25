@@ -32,6 +32,11 @@ public class ProjectDetailActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		
+		if (getResources().getBoolean(R.bool.two_pane_layout)) {
+			finish();
+			return;
+		}
+		
 //		Debug.startMethodTracing("ntasks_detail_short");
 				
 		final ActionBar bar = getActionBar();
@@ -146,7 +151,7 @@ public class ProjectDetailActivity extends Activity {
 
 		Fragment currentFragment = fm.findFragmentById(android.R.id.content);
 		if (currentFragment != tasksFragment) {
-			fm.beginTransaction().replace(android.R.id.content, tasksFragment, tag).commit();					
+			fm.beginTransaction().replace(android.R.id.content, tasksFragment, tag).addToBackStack(null).commit();					
 		}
 	}
 

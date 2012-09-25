@@ -5,6 +5,7 @@
         android:orientation="horizontal"
         android:id="@+id/task_item_layout"
    		android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
+   		android:background="?android:attr/activatedBackgroundIndicator"
         >
 
         <TextView

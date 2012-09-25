@@ -123,4 +123,9 @@ public class ProjectDetailFragment extends Fragment
 
 	public void onLoaderReset(Loader<Cursor> loader) {
 	}
+
+	public void showProject(long id) {
+		mProjectId = id;
+		getLoaderManager().initLoader(0, null, this);
+	}
 }

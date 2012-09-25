@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/main_container"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="horizontal" >
+    
+    <fragment
+        android:id="@+id/project_list"
+        android:name="com.noughmad.ntasks.ProjectListFragment"
+        android:layout_width="0dip"
+        android:layout_height="match_parent"
+        android:layout_weight="0.3"
+       	android:tag="project-list" />
+    
+    <fragment 
+        android:id="@+id/project_detail"
+        android:name="com.noughmad.ntasks.ProjectDetailFragment"
+        android:layout_width="0dip"
+        android:layout_height="match_parent"
+        android:layout_weight="0.7" />
+    
+</LinearLayout>
