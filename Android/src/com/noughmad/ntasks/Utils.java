@@ -112,6 +112,8 @@ public class Utils {
 	public static void startTracking(long taskId, Context context) {
 		Log.i(TAG, "startTracking(): " + taskId);
 		
+		stopTracking(context);
+		
 		Uri uri = ContentUris.withAppendedId(Uri.withAppendedPath(Database.BASE_URI, Database.TASK_TABLE_NAME), taskId);
 		ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(uri);
 		ContentValues values = new ContentValues();

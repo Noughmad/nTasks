@@ -8,6 +8,7 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.util.Log;
@@ -15,6 +16,9 @@ import android.util.Log;
 public class TimeTrackingService extends IntentService {
 	
 	private static final int UPDATE_INTERVAL = 10000;
+	private static final String TAG = "TimeTrackingService";
+	
+	private boolean running;
 
 	public TimeTrackingService() {
 		super("TimeTrackingService");
@@ -47,28 +51,38 @@ public class TimeTrackingService extends IntentService {
 				stopSelf();
 				return;
 			}
+					
+			Notification.Builder builder = new Notification.Builder(this);
+			builder.setContentTitle(task.getString(0));
+			builder.setContentText(project.getString(1));
+			builder.setContentInfo(Utils.formatDuration(task.getLong(2)));
+			builder.setLargeIcon(BitmapFactory.decodeResource(getResources(), Utils.getLargeCategoryDrawable(project.getInt(2))));
+			builder.setSmallIcon(R.drawable.ic_notification);
 			
-			int icon = Utils.getCategoryDrawable(project.getInt(2));
-						
-			Notification notification = new Notification(icon, getText(R.string.app_name), System.currentTimeMillis());
+			
 			Intent notificationIntent = new Intent(this, ProjectDetailActivity.class);
 			intent.putExtra("projectId", project.getLong(0));
 			PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-			notification.setLatestEventInfo(getApplicationContext(), task.getString(0), Utils.formatDuration(task.getLong(2)), pendingIntent);
-						
-			Intent broadcastIntent = new Intent("com.noughmad.ntasks.ACTION_STOP_TRACKING");
-			notification.deleteIntent = PendingIntent.getBroadcast(this, 0, broadcastIntent, 0);
+			builder.setContentIntent(pendingIntent);
 			
-			startForeground(Utils.TRACKING_NOTIFICATION, notification);
+			Intent broadcastIntent = new Intent("com.noughmad.ntasks.ACTION_STOP_TRACKING");
+			builder.setDeleteIntent(PendingIntent.getBroadcast(this, 0, broadcastIntent, 0));
+						
+			startForeground(Utils.TRACKING_NOTIFICATION, builder.getNotification());
 			
 			project.close();
 			task.close();
 			client.release();
 			
-			while (true) {
+			running = true;
+			while (running) {
 				try {
 					Thread.sleep(UPDATE_INTERVAL);
 				} catch (InterruptedException e) {
+					break;
+				}
+				
+				if (!running) {
 					break;
 				}
 				
@@ -79,8 +93,11 @@ public class TimeTrackingService extends IntentService {
 					break;
 				}
 				
-				long duration = task.getLong(2) + UPDATE_INTERVAL;				
-				notification.setLatestEventInfo(getApplicationContext(), task.getString(0), Utils.formatDuration(duration), pendingIntent);
+				long duration = task.getLong(2) + UPDATE_INTERVAL;
+				
+				Log.i(TAG, "Update duration to " + duration);
+				
+				builder.setContentInfo(Utils.formatDuration(duration));
 				task.close();
 
 				ContentValues values = new ContentValues();
@@ -88,13 +105,22 @@ public class TimeTrackingService extends IntentService {
 				client.update(uri, values, null, null);
 				
 				client.release();
-				startForeground(Utils.TRACKING_NOTIFICATION, notification);
+				startForeground(Utils.TRACKING_NOTIFICATION, builder.getNotification());
 			}
 			
 		} catch (RemoteException e) {
+			client.release();
 		}
 		
-		client.release();
 		stopSelf();
 	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		Log.i(TAG, "Destroying a TimeTrackingService");
+		running = false;
+	}
+	
+	
 }

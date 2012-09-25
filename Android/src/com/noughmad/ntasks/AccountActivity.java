@@ -26,7 +26,6 @@ public class AccountActivity extends Activity implements LoginFragment.OnLoginLi
 
         final ActionBar bar = getActionBar();
         bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-        // bar.setDisplayOptions(0, ActionBar.DISPLAY_SHOW_TITLE);
 
         bar.addTab(bar.newTab()
                 .setText("Log In")
@@ -49,6 +48,14 @@ public class AccountActivity extends Activity implements LoginFragment.OnLoginLi
         }
 	}
 	
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putInt("tab", getActionBar().getSelectedNavigationIndex());
+	}
+
+
+
 	public static class TabListener<T extends Fragment> implements ActionBar.TabListener {
         private final Activity mActivity;
         private final String mTag;

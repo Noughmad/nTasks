@@ -23,6 +23,7 @@ import android.widget.SimpleCursorAdapter;
 public class ProjectDetailActivity extends Activity {
 
 	private long mProjectId;
+	private SimpleCursorAdapter mNavigationAdapter;
 	private static final String TAG = "ProjectDetailActivity";
 
 
@@ -51,11 +52,10 @@ public class ProjectDetailActivity extends Activity {
 			e1.printStackTrace();
 		}
 		
-		@SuppressWarnings("deprecation")
-		SimpleCursorAdapter adapter = new SimpleCursorAdapter(bar.getThemedContext(), android.R.layout.simple_spinner_item, cursor, from, to);
+		mNavigationAdapter = new SimpleCursorAdapter(bar.getThemedContext(), android.R.layout.simple_spinner_item, cursor, from, to);
 		
-		adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-		bar.setListNavigationCallbacks(adapter, new ActionBar.OnNavigationListener() {
+		mNavigationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		bar.setListNavigationCallbacks(mNavigationAdapter, new ActionBar.OnNavigationListener() {
 			
 			public boolean onNavigationItemSelected(int itemPosition, long itemId) {
 				try {
@@ -73,9 +73,14 @@ public class ProjectDetailActivity extends Activity {
 	
 	@Override
 	protected void onNewIntent(Intent intent) {
-		int position = intent.getIntExtra("project", -1);
-		if (position > -1) {
-			getActionBar().setSelectedNavigationItem(position);
+		long projectId = intent.getLongExtra("projectId", -1);
+		if (projectId > -1) {
+			for (int i = 0; i < mNavigationAdapter.getCount(); ++i) {
+				if (mNavigationAdapter.getItemId(i) == projectId) {
+					getActionBar().setSelectedNavigationItem(i);
+					break;
+				}
+			}
 		}
 	}
 

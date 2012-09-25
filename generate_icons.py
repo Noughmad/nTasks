@@ -15,6 +15,13 @@ CATEGORY_LARGE_RESOLUTIONS = {
     'xhdpi' : 128
 }
 
+NOTIFICATION_RESOLUTIONS = {
+    'ldpi': 18,
+    'mdpi': 24,
+    'hdpi' : 36,
+    'xhdpi' : 48
+}
+
 FILES = {
     'ntasks.svg' : 'ic_launcher.png',
     'ntasks-light.svg' : 'ic_launcher_light.png'
@@ -52,6 +59,19 @@ for infile, outfile in FILES.items():
             infile,
             'Android/res/drawable-%s/%s' % (folder, outfile)
         ])
+        
+infile = 'ntasks-notification.svg'
+outfile = 'ic_notification.png'
+for folder, size in NOTIFICATION_RESOLUTIONS.items():
+    subprocess.call([
+        'convert', 
+        '-geometry',
+        '%dx%d' % (size, size),
+        '-background',
+        'transparent',
+        infile,
+        'Android/res/drawable-%s/%s' % (folder, outfile)
+    ])
         
 for infile, outfile in CATEGORY_NAMES.items():
     for folder in DPI_VALUES:
