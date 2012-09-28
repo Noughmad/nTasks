@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.ContentProviderClient;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -17,6 +18,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.SimpleCursorAdapter;
 
@@ -80,12 +82,7 @@ public class ProjectDetailActivity extends Activity {
 	protected void onNewIntent(Intent intent) {
 		long projectId = intent.getLongExtra("projectId", -1);
 		if (projectId > -1) {
-			for (int i = 0; i < mNavigationAdapter.getCount(); ++i) {
-				if (mNavigationAdapter.getItemId(i) == projectId) {
-					getActionBar().setSelectedNavigationItem(i);
-					break;
-				}
-			}
+			showProject(projectId);
 		}
 	}
 
@@ -107,8 +104,8 @@ public class ProjectDetailActivity extends Activity {
 			AlertDialog.Builder builder = new AlertDialog.Builder(this);
 			builder.setTitle(R.string.add_task);
 			
-			final EditText edit = new EditText(this);
-			builder.setView(edit);
+			final View view = getLayoutInflater().inflate(R.layout.task_add, null, false);
+			builder.setView(view);
 			builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
 					dialog.dismiss();	
@@ -116,6 +113,11 @@ public class ProjectDetailActivity extends Activity {
 			});
 			builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 				public void onClick(DialogInterface dialog, int which) {
+					EditText edit = (EditText) view;
+					if (edit.getText().toString().isEmpty()) {
+						return;
+					}
+					
 					Uri uri = Uri.withAppendedPath(Database.BASE_URI, Database.TASK_TABLE_NAME);
 					ContentProviderClient client = getContentResolver().acquireContentProviderClient(uri);
 					ContentValues values = new ContentValues();
@@ -132,6 +134,7 @@ public class ProjectDetailActivity extends Activity {
 			});
 			builder.create().show();
 		} else if (item.getItemId() == R.id.menu_refresh) {
+			
 			// TODO: Replace refresh with sync
 		}
 		return super.onOptionsItemSelected(item);
@@ -151,7 +154,12 @@ public class ProjectDetailActivity extends Activity {
 
 		Fragment currentFragment = fm.findFragmentById(android.R.id.content);
 		if (currentFragment != tasksFragment) {
-			fm.beginTransaction().replace(android.R.id.content, tasksFragment, tag).addToBackStack(null).commit();					
+			FragmentTransaction transaction = fm.beginTransaction();
+			transaction.replace(android.R.id.content, tasksFragment, tag);
+			if (currentFragment != null) {
+				transaction.addToBackStack(null);
+			}
+			transaction.commit();					
 		}
 	}
 
@@ -163,4 +171,16 @@ public class ProjectDetailActivity extends Activity {
 			inflater.inflate(R.menu.project_actions, menu);
 			return true;
 		}
+
+	public void setProject(long id) {
+		if (mNavigationAdapter.getItemId(getActionBar().getSelectedNavigationIndex()) == id) {
+			return;
+		}
+		for (int i = 0; i < getActionBar().getNavigationItemCount(); ++i) {
+			if (mNavigationAdapter.getItemId(i) == id) {
+				getActionBar().setSelectedNavigationItem(i);
+				break;
+			}
+		}
+	}
 }

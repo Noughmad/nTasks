@@ -1,4 +1,5 @@
 <resources>
     <bool name="task_item_show_duration">false</bool>
     <bool name="two_pane_layout">false</bool>
+    <bool name="compressed_project_list">false</bool>    
 </resources>

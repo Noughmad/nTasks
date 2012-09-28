@@ -1,4 +1,6 @@
-package com.noughmad.ntasks;
+package com.noughmad.ntasks.tasks;
+
+import com.noughmad.ntasks.Utils;
 
 import android.content.Context;
 import android.graphics.Color;

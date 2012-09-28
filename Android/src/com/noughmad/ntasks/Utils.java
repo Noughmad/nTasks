@@ -17,6 +17,8 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.RemoteException;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.EditText;
 
 import com.parse.ParseObject;
@@ -85,12 +87,17 @@ public class Utils {
 	public static void addNote(final long id, final Context context) {
 		
 		AlertDialog.Builder builder = new AlertDialog.Builder(context);
-		final EditText edit = new EditText(context);
-		edit.setSingleLine(false);
-		builder.setView(edit);
+		LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		final View view = inflater.inflate(R.layout.note_add, null, false);
+		builder.setView(view);
 		
 		builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
+				EditText edit = (EditText) view;
+				if (edit.getText().toString().isEmpty()) {
+					return;
+				}
+				
 				ContentValues values = new ContentValues();
 				values.put(Database.KEY_NOTE_TEXT, edit.getText().toString());
 				values.put(Database.KEY_NOTE_TASK, id);

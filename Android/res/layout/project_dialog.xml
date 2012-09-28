@@ -1,13 +1,14 @@
 
-    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/project_dialog_layout"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent" >
+        android:layout_height="fill_parent"
+        android:orientation="vertical" >
 
         <EditText
             android:id="@+id/project_title"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:hint="@string/project_name"
             android:singleLine="true"
             android:ems="10" >
@@ -18,8 +19,7 @@
         <EditText
             android:id="@+id/project_client"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/project_title"
+            android:layout_height="48dp"
             android:hint="@string/project_client"
             android:singleLine="true"
             android:ems="10" >
@@ -29,9 +29,8 @@
             android:id="@+id/project_category"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@id/project_client"
             android:spinnerMode="dialog"
             android:prompt="@string/project_category"
             />
         
-    </RelativeLayout>
+    </LinearLayout>

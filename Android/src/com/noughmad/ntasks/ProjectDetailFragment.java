@@ -2,13 +2,9 @@ package com.noughmad.ntasks;
 
 import android.app.AlertDialog;
 import android.app.Fragment;
-import android.app.LoaderManager;
 import android.content.ContentProviderClient;
 import android.content.ContentUris;
-import android.content.CursorLoader;
 import android.content.DialogInterface;
-import android.content.Loader;
-import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
@@ -19,11 +15,12 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ExpandableListView;
 
-public class ProjectDetailFragment extends Fragment 
-	implements LoaderManager.LoaderCallbacks<Cursor> {
+import com.noughmad.ntasks.tasks.TaskTreeAdapter;
+
+public class ProjectDetailFragment extends Fragment {
 	
 	private long mProjectId;
-	private TaskListAdapter mAdapter;
+	private TaskTreeAdapter mAdapter;
 
 	public static ProjectDetailFragment create(long projectId) {
 		ProjectDetailFragment f = new ProjectDetailFragment();
@@ -59,10 +56,13 @@ public class ProjectDetailFragment extends Fragment
 
 		Log.d("ProjectDetailFragment", "onActivityCreated(): " + mAdapter);
 		
+		ProjectDetailActivity projectDetailActivity = (ProjectDetailActivity) getActivity();
+		if (projectDetailActivity != null) {
+			projectDetailActivity.setProject(mProjectId);
+		}
 		
-		mAdapter = new TaskListAdapter(null, getActivity());
+		mAdapter = new TaskTreeAdapter(getActivity(), mProjectId, getListView());
 		getListView().setAdapter(mAdapter);
-		getLoaderManager().initLoader(0, null, this);
 
 		getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 	
@@ -101,31 +101,9 @@ public class ProjectDetailFragment extends Fragment
 	ExpandableListView getListView() {
 		return (ExpandableListView) getView();
 	}
-
-	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-		Uri uri = Uri.withAppendedPath(Database.BASE_URI, Database.TASK_TABLE_NAME);
-
-		// Columns: _id, name, status, duration, active, lastStart
-		String[] projection = new String[] {Database.ID, Database.KEY_TASK_NAME, 
-				Database.KEY_TASK_STATUS, Database.KEY_TASK_DURATION, 
-				Database.KEY_TASK_ACTIVE, Database.KEY_TASK_LASTSTART};
-		
-		String selection = Database.KEY_TASK_PROJECT + " = ?";
-		String[] selectionArgs = new String[] {Long.toString(mProjectId)};
-		
-		return new CursorLoader(getActivity(), uri, projection, selection, selectionArgs, null);
-	}
-
-	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-		Log.i("ProjectDetailFragment", "Loaded cursor: " + cursor);
-		mAdapter.changeCursor(cursor);
-	}
-
-	public void onLoaderReset(Loader<Cursor> loader) {
-	}
-
+	
 	public void showProject(long id) {
 		mProjectId = id;
-		getLoaderManager().initLoader(0, null, this);
+		mAdapter.setProject(id);
 	}
 }

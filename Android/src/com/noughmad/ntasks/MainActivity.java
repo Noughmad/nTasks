@@ -1,11 +1,10 @@
 package com.noughmad.ntasks;
 
-import android.app.Activity;
 import android.app.Fragment;
-import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -13,21 +12,38 @@ import android.view.MenuItem;
 
 import com.parse.ParseUser;
 
-public class MainActivity extends Activity {
+public class MainActivity extends IconGetterActivity {
 	
 	static final int LOGIN_REQUEST = 0;
+	static final int CAMERA_REQUEST = 1;
+	static final int GALLERY_REQUEST = 2;
 	static final String TAG = "MainActivity";
+	
+	long mIconProjectId;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
+		
+		Log.i(TAG, "Is two-pane: " + getResources().getBoolean(R.bool.two_pane_layout));
+		
+		DisplayMetrics metrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(metrics);
+		Log.i(TAG, "Display width: " + metrics.widthPixels + ", " + metrics.xdpi);
 	}
 
 	@Override
 	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		if (requestCode == LOGIN_REQUEST && resultCode == RESULT_OK) {
-			startSync();
+		switch (requestCode) {
+		case LOGIN_REQUEST:
+			if (resultCode == RESULT_OK) {
+				startSync();
+			}
+			break;
+			
+		default:
+			super.onActivityResult(requestCode, resultCode, data);
 		}
 	}
 	

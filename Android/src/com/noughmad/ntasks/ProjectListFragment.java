@@ -18,33 +18,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.SimpleCursorAdapter;
 
 public class ProjectListFragment extends ListFragment
 	implements LoaderManager.LoaderCallbacks<Cursor> {
-
-	private static String[] from = new String[] {"title", "client", "category"};
-	private static int[] to = new int[] {R.id.project_title, R.id.project_client, R.id.project_image};
 	
-	private SimpleCursorAdapter mAdapter;
+	private ProjectListAdapter mAdapter;
 	
-	private static class ProjectItemBinder implements SimpleCursorAdapter.ViewBinder {
-
-		private final static int PROJECT_CATEGORY_COLUMN_INDEX = 3;
-
-		public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
-			switch (columnIndex) {
-			case PROJECT_CATEGORY_COLUMN_INDEX:
-				((ImageView)view).setImageResource(Utils.getLargeCategoryDrawable(cursor.getInt(columnIndex)));
-				return true;			
-			}
-			return false;
-		}
-		
-	}
-
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		if (getResources().getBoolean(R.bool.two_pane_layout)) {
@@ -66,7 +46,12 @@ public class ProjectListFragment extends ListFragment
 				    ProjectDialogFragment newFragment = ProjectDialogFragment.create(id);
 				    newFragment.show(ft, "project-dialog");
 					break;
-				case 1: // Delete
+				case 1: // Change icon
+					((IconGetterActivity)getActivity()).getIconForProject(id);
+					break;
+
+					
+				case 2: // Delete
 					String[] columns = new String[] {Database.KEY_PROJECT_TITLE};
 					Uri uri = ContentUris.withAppendedId(Uri.withAppendedPath(Database.BASE_URI, Database.PROJECT_TABLE_NAME), id);
 					ContentProviderClient client = getActivity().getContentResolver().acquireContentProviderClient(uri);
@@ -114,6 +99,7 @@ public class ProjectListFragment extends ListFragment
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
+		
 				
 		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
 
@@ -121,9 +107,8 @@ public class ProjectListFragment extends ListFragment
 				onListItemLongClick((ListView) parent, view, position, id);
 			    return true;
 			}});
-
-		mAdapter = new SimpleCursorAdapter(getActivity(), R.layout.project_item, null, from, to, 0);
-		mAdapter.setViewBinder(new ProjectItemBinder());
+		
+		mAdapter = new ProjectListAdapter(getActivity(), null);
 		setListAdapter(mAdapter);
 		
 		setListShown(false);
@@ -150,6 +135,4 @@ public class ProjectListFragment extends ListFragment
 	public void onLoaderReset(Loader<Cursor> loader) {
 		mAdapter.swapCursor(null);
 	}
-	
-	
 }

@@ -13,44 +13,46 @@ import android.util.Log;
 
 
 public class Database {
-	static final String ID = BaseColumns._ID;
+	public static final String ID = BaseColumns._ID;
 	
-	static final String PROJECT_TABLE_NAME = "Project";
-	static final String TASK_TABLE_NAME = "Task";
-	static final String NOTE_TABLE_NAME = "Note";
-	static final String WORKUNIT_TABLE_NAME = "WorkUnit";
+	public static final String PROJECT_TABLE_NAME = "Project";
+	public static final String TASK_TABLE_NAME = "Task";
+	public static final String NOTE_TABLE_NAME = "Note";
+	public static final String WORKUNIT_TABLE_NAME = "WorkUnit";
 
-	static final String KEY_PROJECT_TITLE = "title";
-	static final String KEY_PROJECT_CLIENT = "client";
-	static final String KEY_PROJECT_DESCRIPTION = "description";
-	static final String KEY_PROJECT_CATEGORY = "category";
+	public static final String KEY_PROJECT_TITLE = "title";
+	public static final String KEY_PROJECT_CLIENT = "client";
+	public static final String KEY_PROJECT_DESCRIPTION = "description";
+	public static final String KEY_PROJECT_CATEGORY = "category";
+	public static final String KEY_PROJECT_ICON = "icon";
 
-	static final String KEY_TASK_NAME = "name";
-	static final String KEY_TASK_PROJECT = "project";
-	static final String KEY_TASK_STATUS = "status";
-	static final String KEY_TASK_DURATION = "duration";
-	static final String KEY_TASK_ACTIVE = "active";
-	static final String KEY_TASK_LASTSTART = "lastStart";
+	public static final String KEY_TASK_NAME = "name";
+	public static final String KEY_TASK_PROJECT = "project";
+	public static final String KEY_TASK_STATUS = "status";
+	public static final String KEY_TASK_DURATION = "duration";
+	public static final String KEY_TASK_ACTIVE = "active";
+	public static final String KEY_TASK_LASTSTART = "lastStart";
 	
-	static final String KEY_NOTE_TEXT = "text";
-	static final String KEY_NOTE_TASK = "task";
+	public static final String KEY_NOTE_TEXT = "text";
+	public static final String KEY_NOTE_TASK = "task";
 
-	static final String KEY_WORKUNIT_TASK = "task";
-	static final String KEY_WORKUNIT_START = "start";
-	static final String KEY_WORKUNIT_END = "end";
-	static final String KEY_WORKUNIT_DURATION = "duration";
+	public static final String KEY_WORKUNIT_TASK = "task";
+	public static final String KEY_WORKUNIT_START = "start";
+	public static final String KEY_WORKUNIT_END = "end";
+	public static final String KEY_WORKUNIT_DURATION = "duration";
 	
-	static final String KEY_OBJECT = "object";
+	public static final String KEY_OBJECT = "object";
 	
-	static final Uri BASE_URI = Uri.parse(ContentResolver.SCHEME_CONTENT + "://com.noughmad.ntasks.provider");
+	public static final Uri BASE_URI = Uri.parse(ContentResolver.SCHEME_CONTENT + "://com.noughmad.ntasks.provider");
 
 	public static final String EXISTS_PARSE_ID = "exists";
 	public static final String IS_LOCAL = "local";
+	public static final String TIMELINE = "timeline";
 
 	private Helper mHelper;
 	
-	static String[] projectColumns = new String[] {
-		 ID, KEY_PROJECT_TITLE, KEY_PROJECT_CLIENT, KEY_PROJECT_CATEGORY, KEY_PROJECT_DESCRIPTION, KEY_OBJECT
+	public static String[] projectColumns = new String[] {
+		 ID, KEY_PROJECT_TITLE, KEY_PROJECT_CLIENT, KEY_PROJECT_CATEGORY, KEY_PROJECT_DESCRIPTION, KEY_PROJECT_ICON, KEY_OBJECT
 	};
 	
 	static String[] taskColumns = new String [] {
@@ -193,7 +195,7 @@ public class Database {
 	}
 	
 	private class Helper extends SQLiteOpenHelper {
-		private static final int DATABASE_VERSION = 10;
+		private static final int DATABASE_VERSION = 11;
 		private static final String DATABASE_NAME = "nTasks";
 
 
@@ -205,6 +207,7 @@ public class Database {
 	                KEY_PROJECT_CLIENT + " TEXT, " +
 	                KEY_PROJECT_DESCRIPTION + " TEXT, " +
 	                KEY_PROJECT_CATEGORY + " INTEGER, " + 
+	                KEY_PROJECT_ICON + " TEXT, " +
 	                "FOREIGN KEY(" + KEY_OBJECT + ") REFERENCES " + Bridge.OBJECT_TABLE_NAME + "(" + BaseColumns._ID + ") ON DELETE CASCADE);";
 
 	    private static final String TASK_TABLE_CREATE =
@@ -266,7 +269,12 @@ public class Database {
 
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-			// TODO;
+			if (db.isReadOnly()) {
+			}
+			if (oldVersion < 11) {
+				db.execSQL("ALTER TABLE " + PROJECT_TABLE_NAME + 
+						" ADD COLUMN " + KEY_PROJECT_ICON + " TEXT;");
+			}
 		}
 		
 		@Override

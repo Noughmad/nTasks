@@ -97,5 +97,5 @@ for infile, outfile in CATEGORY_NAMES.items():
 for res in DPI_VALUES:
     for icon in ['refresh', 'add']:
         args = (res, icon)
-        shutil.copyfile('/opt/android-sdk/platforms/android-16/data/res/drawable-%s/ic_menu_%s.png' % args,
+        shutil.copyfile('/opt/android-sdk/platforms/android-15/data/res/drawable-%s/ic_menu_%s.png' % args,
                         'Android/res/drawable-%s/ic_menu_%s.png' % args)

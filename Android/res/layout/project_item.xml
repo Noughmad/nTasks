@@ -7,14 +7,14 @@
         android:id="@+id/project_image"
     	android:layout_width="64dp"
     	android:layout_height="64dp"
-    	android:layout_alignParentRight="true"
+    	android:layout_alignParentLeft="true"
     	android:contentDescription="@string/project_icon" />
 
     <LinearLayout
           android:layout_width="wrap_content"
           android:layout_height="match_parent"
-          android:layout_toLeftOf="@id/project_image"
-          android:layout_alignParentLeft="true"
+          android:layout_toRightOf="@id/project_image"
+          android:layout_alignParentRight="true"
           android:orientation="vertical"
           android:padding="8dp" >
           
