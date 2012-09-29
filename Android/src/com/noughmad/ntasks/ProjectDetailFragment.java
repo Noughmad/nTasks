@@ -54,7 +54,7 @@ public class ProjectDetailFragment extends Fragment {
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
-		Log.d("ProjectDetailFragment", "onActivityCreated(): " + mAdapter);
+		Log.d("ProjectDetailFragment", "onActivityCreated(): " + mProjectId);
 		
 		ProjectDetailActivity projectDetailActivity = (ProjectDetailActivity) getActivity();
 		if (projectDetailActivity != null) {

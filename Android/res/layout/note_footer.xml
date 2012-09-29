@@ -1,0 +1,21 @@
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+   		android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft" >
+
+       <Button
+            android:id="@+id/add_note"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:text="@string/note_add" />
+
+        <Button
+            android:id="@+id/start_stop_task"
+            android:layout_width="0dip"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.5"
+            android:text="@string/task_start" />
+
+    </LinearLayout>

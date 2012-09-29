@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.RemoteException;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,16 +23,34 @@ public class NoteListAdapter extends CursorAdapter {
 	public NoteListAdapter(Context context, Cursor c) {
 		super(context, c, 0);
 	}
+	
+	
+
+	@Override
+	public View getView(int position, View convertView, ViewGroup parent) {
+		if (convertView != null && convertView.findViewById(R.id.note_text) == null) {
+			convertView = null;
+		}
+		return super.getView(position, convertView, parent);
+	}
 
 	@Override
 	public void bindView(View view, Context context, Cursor cursor) {
+		Log.i("NoteListAdapter", "Binding view for note " + cursor.getLong(0));
+		
 		TextView textView = (TextView)view.findViewById(R.id.note_text);
-		textView.setText(cursor.getString(1));
+		if (textView != null) {
+			textView.setText(cursor.getString(1));
+		} else {
+			Log.w("NoteListAdapter", "Could not find note text view: " + textView + ", " + view);
+			Log.w("NoteListAdapter", "or " + view.findViewById(R.id.note_delete_button));
+		}
 	}
 
 	@Override
 	public View newView(final Context context, Cursor cursor, ViewGroup parent) {
 		final long noteId = cursor.getLong(0);
+		Log.i("NoteListAdapter", "Creating view for note " + noteId);
 		
 		View view = ((LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.note_item, parent, false);
 		view.findViewById(R.id.note_delete_button).setOnClickListener(new View.OnClickListener() {

@@ -184,4 +184,18 @@ public class Utils {
 		Intent intent = new Intent(context.getApplicationContext(), TimeTrackingService.class);
 		context.stopService(intent);
 	}
+
+	public static int getTaskStatusDrawable(int position) {
+		switch (position) {
+		case 0:
+			return android.R.drawable.ic_dialog_alert;
+		case 1:
+			return android.R.drawable.ic_menu_agenda;
+		case 2:
+			return android.R.drawable.ic_menu_recent_history;
+		case 3:
+			return R.drawable.ic_menu_mark;
+		}
+		return 0;
+	}
 }

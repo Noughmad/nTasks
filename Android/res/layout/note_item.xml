@@ -4,6 +4,7 @@
         android:layout_height="48dp"
         android:orientation="horizontal"
         android:id="@+id/task_item_layout"
+		android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
         >
 
         <TextView

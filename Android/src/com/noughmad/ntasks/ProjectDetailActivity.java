@@ -148,7 +148,7 @@ public class ProjectDetailActivity extends Activity {
 		ProjectDetailFragment tasksFragment = (ProjectDetailFragment) fm.findFragmentByTag(tag);
 		
 		if (tasksFragment == null) {
-			Log.i(TAG, "Creating a new fragment for the project");
+			Log.i(TAG, "Creating a new fragment for the project " + projectId);
 			tasksFragment = ProjectDetailFragment.create(projectId);
 		}
 
@@ -174,6 +174,7 @@ public class ProjectDetailActivity extends Activity {
 
 	public void setProject(long id) {
 		if (mNavigationAdapter.getItemId(getActionBar().getSelectedNavigationIndex()) == id) {
+			showProject(id);
 			return;
 		}
 		for (int i = 0; i < getActionBar().getNavigationItemCount(); ++i) {

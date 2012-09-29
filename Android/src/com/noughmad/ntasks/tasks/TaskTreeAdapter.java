@@ -1,7 +1,6 @@
 package com.noughmad.ntasks.tasks;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import android.app.Activity;
 import android.app.LoaderManager;
@@ -12,15 +11,21 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.SparseArray;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.HeaderViewListAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ListView.FixedViewInfo;
 import android.widget.WrapperListAdapter;
 
 import com.noughmad.ntasks.Database;
+import com.noughmad.ntasks.R;
+import com.noughmad.ntasks.Utils;
 
 public class TaskTreeAdapter extends AdapterTreeAdapter
 	implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -29,16 +34,18 @@ public class TaskTreeAdapter extends AdapterTreeAdapter
 	private Context mContext;
 	private long mProjectId;
 	private ListView mListView;
+	private SparseArray<Button> taskStartButtons;
 	
 	public TaskTreeAdapter(Context context, long projectId, ListView listView) {
 		super(context, new HeaderViewListAdapter(null, null, new TaskListAdapter(context, null)));
 		mContext = context;
 		mListView = listView;
+		taskStartButtons = new SparseArray<Button>();
 		setProject(projectId);
 	}
 	
 	@Override
-	public ListAdapter newChildrenAdapter(Context context, int groupPosition) {
+	public ListAdapter newChildrenAdapter(Context context, final int groupPosition) {
 		NoteListAdapter adapter = new NoteListAdapter(context, null);
 		
 		ListView.FixedViewInfo footer = mListView.new FixedViewInfo();
@@ -46,7 +53,19 @@ public class TaskTreeAdapter extends AdapterTreeAdapter
 		footer.data = null;
 		Button button = new Button(context);
 		button.setText("Add Note");
-		footer.view = button;
+		footer.view = ((LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(R.layout.note_footer, null, false);
+		((LinearLayout)footer.view).setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
+		footer.view.findViewById(R.id.add_note).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				Utils.addNote(getGroupId(groupPosition), v.getContext());
+			}
+		});
+		footer.view.findViewById(R.id.start_stop_task).setOnClickListener(new View.OnClickListener() {
+			public void onClick(View v) {
+				Utils.startTracking(getGroupId(groupPosition), v.getContext());
+			}
+		});
+		
 		ArrayList<FixedViewInfo> infos = new ArrayList<FixedViewInfo>();
 		infos.add(footer);
 		HeaderViewListAdapter headerAdapter = new HeaderViewListAdapter(null, infos, adapter);
@@ -86,12 +105,17 @@ public class TaskTreeAdapter extends AdapterTreeAdapter
 	}
 
 	public void onLoaderReset(Loader<Cursor> loader) {
-		
+		ListAdapter adapter;
+		if (loader.getId() < 0) {
+			adapter = getGroupAdapter();
+		} else {
+			adapter = getChildrenAdapter(loader.getId());
+		}
+		((CursorAdapter)((WrapperListAdapter)adapter).getWrappedAdapter()).swapCursor(null);
 	}
 
 	public void setProject(long id) {
 		mProjectId = id;
 		((Activity)mContext).getLoaderManager().initLoader(-1, null, this);
-
 	}	
 }
