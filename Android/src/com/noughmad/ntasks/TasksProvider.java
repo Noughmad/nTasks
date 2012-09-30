@@ -37,7 +37,11 @@ public class TasksProvider extends ContentProvider {
 		sUriMatcher.addURI(sAuth, Database.TASK_TABLE_NAME + "/#/" + Database.NOTE_TABLE_NAME, 10);
 		sUriMatcher.addURI(sAuth, Database.TASK_TABLE_NAME + "/#/" + Database.WORKUNIT_TABLE_NAME, 11);
 
-		sUriMatcher.addURI(sAuth, "local/*", 12);
+		sUriMatcher.addURI(sAuth, Database.IS_LOCAL + "/*", 12);
+		
+		sUriMatcher.addURI(sAuth, Database.TIMELINE, 14);
+		sUriMatcher.addURI(sAuth, Database.TIMELINE + "/#", 15);
+
 		sUriMatcher.addURI(sAuth, "*/" + Database.EXISTS_PARSE_ID + "/*", 13);
 		
 		localValues.put(Bridge.KEY_OBJECT_LOCAL, 1);
@@ -137,8 +141,12 @@ public class TasksProvider extends ContentProvider {
 	@Override
 	public Cursor query(Uri uri, String[] projection, String selection,
 			String[] selectionArgs, String sortOrder) {
-		Log.i(TAG, "Query: " + uri);
 		int match = sUriMatcher.match(uri);
+		Log.i(TAG, "Query: " + uri + " => " + match);
+		Uri test = Uri.parse("content://" + sAuth + "/Timeline");
+		Log.i(TAG, "Test : " + test + " => " + sUriMatcher.match(test));
+		test = Uri.parse("content://" + sAuth + "/Task/Exists/omg");
+		Log.i(TAG, "Local: " + test + " => " + sUriMatcher.match(test));
 		
 		if (match == 12) {
 			// Objects with local changes
@@ -148,6 +156,27 @@ public class TasksProvider extends ContentProvider {
 		} else if (match == 13) {
 			// Check if a record with parseId exists
 			Cursor cursor = queryParseId(uri.getPathSegments(), projection);
+			cursor.setNotificationUri(getContext().getContentResolver(), uri);
+			return cursor;
+		} else if (match == 14 || match == 15) {
+			// Timeline, show latest work units for all projects
+			String[] columns = new String[] {
+					Database.TASK_TABLE_NAME + "." + Database.ID, 
+					Database.TASK_TABLE_NAME + "." + Database.KEY_TASK_NAME,
+					Database.TASK_TABLE_NAME + "." + Database.KEY_TASK_PROJECT,
+					Database.WORKUNIT_TABLE_NAME + "." + Database.KEY_WORKUNIT_START,
+					Database.WORKUNIT_TABLE_NAME + "." + Database.KEY_WORKUNIT_END,
+					Database.WORKUNIT_TABLE_NAME + "." + Database.KEY_WORKUNIT_DURATION,
+			};
+			String sel = Database.TASK_TABLE_NAME + "." + Database.ID + " = " + Database.WORKUNIT_TABLE_NAME + "." + Database.KEY_WORKUNIT_TASK; 
+
+			String[] args = null;
+			if (match == 15) {
+				sel = sel + " AND " + Database.TASK_TABLE_NAME + "." + Database.KEY_TASK_PROJECT + " = ?";
+				args = new String[] {uri.getLastPathSegment()};
+			}
+			String tables = Database.WORKUNIT_TABLE_NAME + ", " + Database.TASK_TABLE_NAME;
+			Cursor cursor = db.getReadableDatabase().query(tables, columns, sel, args, null, null, sortOrder);
 			cursor.setNotificationUri(getContext().getContentResolver(), uri);
 			return cursor;
 		}

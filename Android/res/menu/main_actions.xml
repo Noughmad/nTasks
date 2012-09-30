@@ -6,13 +6,18 @@
           android:showAsAction="never" />
     
     <item android:id="@+id/menu_add_project"
-          android:icon="@android:drawable/ic_menu_add"
+          android:icon="@drawable/ic_menu_project_add"
           android:title="@string/add_project"
           android:showAsAction="ifRoom|withText" />
     
     <item android:id="@+id/menu_settings"
         android:title="@string/settings"
-       android:icon="@android:drawable/ic_menu_preferences" />
+       android:icon="@android:drawable/ic_menu_preferences"
+       android:showAsAction="ifRoom|withText" />
+    
+    <item android:id="@+id/menu_statistics"
+        android:title="Statictics"
+        android:showAsAction="never" />
     
     <item android:id="@+id/menu_logout"
           android:title="@string/menu_logout"

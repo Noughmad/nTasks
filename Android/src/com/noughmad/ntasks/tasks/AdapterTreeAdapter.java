@@ -1,7 +1,5 @@
 package com.noughmad.ntasks.tasks;
 
-import java.util.Map;
-
 import android.content.Context;
 import android.database.DataSetObserver;
 import android.util.SparseArray;

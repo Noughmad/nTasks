@@ -56,9 +56,11 @@ public class ProjectDetailFragment extends Fragment {
 
 		Log.d("ProjectDetailFragment", "onActivityCreated(): " + mProjectId);
 		
-		ProjectDetailActivity projectDetailActivity = (ProjectDetailActivity) getActivity();
-		if (projectDetailActivity != null) {
+		try {
+			ProjectDetailActivity projectDetailActivity = (ProjectDetailActivity) getActivity();
 			projectDetailActivity.setProject(mProjectId);
+		} catch (ClassCastException e) {
+			// Running in two-pane mode
 		}
 		
 		mAdapter = new TaskTreeAdapter(getActivity(), mProjectId, getListView());

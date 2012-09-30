@@ -45,9 +45,9 @@ public class Database {
 	
 	public static final Uri BASE_URI = Uri.parse(ContentResolver.SCHEME_CONTENT + "://com.noughmad.ntasks.provider");
 
-	public static final String EXISTS_PARSE_ID = "exists";
-	public static final String IS_LOCAL = "local";
-	public static final String TIMELINE = "timeline";
+	public static final String EXISTS_PARSE_ID = "Exists";
+	public static final String IS_LOCAL = "Local";
+	public static final String TIMELINE = "Timeline";
 
 	private Helper mHelper;
 	
@@ -67,7 +67,7 @@ public class Database {
 		ID, KEY_WORKUNIT_TASK, KEY_WORKUNIT_START, KEY_WORKUNIT_END, KEY_WORKUNIT_DURATION, KEY_OBJECT
 	};
 	
-	Database(Context context) {
+	public Database(Context context) {
 		mHelper = new Helper(context);
 	}
 	
@@ -220,8 +220,8 @@ public class Database {
 	                KEY_TASK_DURATION + " INTEGER, " +
 	                KEY_TASK_ACTIVE + " INTEGER, " +
 	                KEY_TASK_LASTSTART + " INTEGER, " + 
-	                "FOREIGN KEY(" + KEY_TASK_PROJECT + ") REFERENCES " + PROJECT_TABLE_NAME + "(" + BaseColumns._ID + "), " +
-	                "FOREIGN KEY(" + KEY_OBJECT + ") REFERENCES " + Bridge.OBJECT_TABLE_NAME + "(" + BaseColumns._ID + "));";
+	                "FOREIGN KEY(" + KEY_TASK_PROJECT + ") REFERENCES " + PROJECT_TABLE_NAME + "(" + BaseColumns._ID + ") ON DELETE CASCADE, " +
+	                "FOREIGN KEY(" + KEY_OBJECT + ") REFERENCES " + Bridge.OBJECT_TABLE_NAME + "(" + BaseColumns._ID + ") ON DELETE CASCADE);";
 
 	    private static final String NOTE_TABLE_CREATE =
                 "CREATE TABLE " + NOTE_TABLE_NAME + " (" +

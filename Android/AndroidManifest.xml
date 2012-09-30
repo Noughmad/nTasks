@@ -60,6 +60,12 @@
             android:syncable="true"
             android:writePermission="com.noughmad.ntasks.WRITE_TASKS" >
         </provider>
+        <provider
+            android:name="com.noughmad.ntasks.plot.PlotDataProvider"
+            android:authorities="com.noughmad.ntasks.plot.provider"
+            android:syncable="false"
+            android:writePermission="com.noughmad.ntasks.WRITE_TASKS" >
+        </provider>
         <service android:name=".SyncService" />
         <service android:name=".TimeTrackingService" />
         

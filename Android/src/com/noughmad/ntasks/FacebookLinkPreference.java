@@ -13,8 +13,10 @@ import android.content.res.TypedArray;
 import android.preference.CheckBoxPreference;
 import android.util.AttributeSet;
 
+import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
+import com.parse.ParseTwitterUtils;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.parse.facebook.AsyncFacebookRunner;
@@ -30,42 +32,55 @@ public class FacebookLinkPreference extends CheckBoxPreference {
 		ParseUser user = ParseUser.getCurrentUser();
 		setEnabled(user != null && user.isAuthenticated());
 		
-		if (ParseFacebookUtils.isLinked(ParseUser.getCurrentUser())) {
+		if (user != null && ParseFacebookUtils.isLinked(user)) {
 			setAccountName();
 		}
 	}
 
 	@Override
 	protected Object onGetDefaultValue(TypedArray a, int index) {
-		return ParseFacebookUtils.isLinked(ParseUser.getCurrentUser());
+		return ParseUser.getCurrentUser() != null && ParseFacebookUtils.isLinked(ParseUser.getCurrentUser());
 	}
 
 	@Override
 	protected void onClick() {
 		ParseUser user = ParseUser.getCurrentUser();
-		boolean linked = ParseFacebookUtils.isLinked(user);
-		if (linked) {
-			ParseFacebookUtils.unlinkInBackground(user, new SaveCallback() {
+
+		if (user == null) {
+			ParseFacebookUtils.logIn((Activity) getContext(), new LogInCallback() {
 				@Override
-				public void done(ParseException e) {
+				public void done(ParseUser user, ParseException e) {
 					if (e == null) {
-						setChecked(false);
+						setChecked(true);
 					} else {
 						e.printStackTrace();
 					}
 				}});
 		} else {
-			ParseFacebookUtils.link(user, (Activity)getContext(), new SaveCallback() {
-				@Override
-				public void done(ParseException e) {
-					if (e == null) {
-						setChecked(true);
-						setAccountName();
-					} else {
-						e.printStackTrace();
+			boolean linked = ParseFacebookUtils.isLinked(user);
+			if (linked) {
+				ParseFacebookUtils.unlinkInBackground(user, new SaveCallback() {
+					@Override
+					public void done(ParseException e) {
+						if (e == null) {
+							setChecked(false);
+						} else {
+							e.printStackTrace();
+						}
+					}});
+			} else {
+				ParseFacebookUtils.link(user, (Activity)getContext(), new SaveCallback() {
+					@Override
+					public void done(ParseException e) {
+						if (e == null) {
+							setChecked(true);
+							setAccountName();
+						} else {
+							e.printStackTrace();
+						}
 					}
-				}
-			});
+				});
+			}
 		}
 	}
 	

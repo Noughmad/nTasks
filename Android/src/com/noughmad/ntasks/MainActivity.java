@@ -3,6 +3,7 @@ package com.noughmad.ntasks;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -89,11 +90,20 @@ public class MainActivity extends IconGetterActivity {
 		case R.id.menu_settings:
 			Intent intent = new Intent(this, SettingsActivity.class);
 			startActivity(intent);
+			break;
+			
+		case R.id.menu_statistics:
+			showPlots();
+			break;
 		}
 		return true;
 	}
 	
 	private void startSync() {
 		startService(new Intent(this, SyncService.class));
+	}
+	
+	private void showPlots() {
+		// TODO:
 	}
 }

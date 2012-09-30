@@ -6,8 +6,7 @@
         android:showAsAction="never" />
     
     <item android:id="@+id/menu_add_task"
-          android:icon="@android:drawable/ic_menu_add"
-          android:title="@string/add_task"
-          android:showAsAction="ifRoom|withText" />
+          android:icon="@drawable/ic_menu_task_add"
+          android:title="@string/add_task"     android:showAsAction="ifRoom|withText" />
     
 </menu>

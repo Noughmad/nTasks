@@ -1,7 +1,6 @@
 package com.noughmad.ntasks;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import android.app.ListFragment;
 import android.app.LoaderManager;
@@ -12,10 +11,12 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.widget.CursorAdapter;
-import android.widget.EditText;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
 import android.widget.ListView.FixedViewInfo;
+import android.widget.TextView;
+
+import com.noughmad.ntasks.tasks.TimelineAdapter;
 
 
 public class TimelineFragment extends ListFragment
@@ -32,12 +33,14 @@ public class TimelineFragment extends ListFragment
 		ListView.FixedViewInfo header = getListView().new FixedViewInfo();
 		header.data = null;
 		header.isSelectable = false;
-		EditText edit = new EditText(getActivity());
+		TextView edit = new TextView(getActivity());
 		edit.setText("Recent actions");
+		header.view = edit;
 		
-		HeaderViewListAdapter adapter = new HeaderViewListAdapter(
-				(ArrayList<FixedViewInfo>) Arrays.asList(header), null, null);
-		this.setListAdapter(adapter);
+		ArrayList<FixedViewInfo> headers = new ArrayList<FixedViewInfo>();
+		headers.add(header);
+		HeaderViewListAdapter adapter = new HeaderViewListAdapter(headers, null, new TimelineAdapter(getActivity(), null));
+		setListAdapter(adapter);
 		
 		getLoaderManager().initLoader(0, null, this);
 	}
@@ -54,7 +57,7 @@ public class TimelineFragment extends ListFragment
 	}
 
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-		((CursorAdapter)((HeaderViewListAdapter)getListAdapter()).getWrappedAdapter()).swapCursor(null);		
+		((CursorAdapter)((HeaderViewListAdapter)getListAdapter()).getWrappedAdapter()).swapCursor(cursor);		
 		
 		if (isResumed()) {
 			setListShown(true);
