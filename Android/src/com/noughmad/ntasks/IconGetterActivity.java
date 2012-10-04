@@ -44,7 +44,7 @@ public class IconGetterActivity extends Activity {
 				}
 				Bitmap bitmap = (Bitmap) data.getExtras().get("data");
 				File file = new File(
-					this.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+					getExternalFilesDir(Environment.DIRECTORY_PICTURES),
 					"project_icon_" + mCurrentProjectId + ".png"
 				);
 				FileOutputStream stream;

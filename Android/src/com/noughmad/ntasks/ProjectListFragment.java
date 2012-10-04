@@ -15,7 +15,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
@@ -99,7 +101,6 @@ public class ProjectListFragment extends ListFragment
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-		
 				
 		getListView().setOnItemLongClickListener(new OnItemLongClickListener() {
 
@@ -111,8 +112,19 @@ public class ProjectListFragment extends ListFragment
 		mAdapter = new ProjectListAdapter(getActivity(), null);
 		setListAdapter(mAdapter);
 		
-		setListShown(false);
 		getLoaderManager().initLoader(0, null, this);
+		
+		if (getResources().getBoolean(R.bool.two_pane_layout)) {
+			getListView().setChoiceMode(ListView.CHOICE_MODE_SINGLE);
+		} else {
+			getListView().setChoiceMode(ListView.CHOICE_MODE_NONE);
+		}
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		return inflater.inflate(R.layout.project_list, container);
 	}
 
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
@@ -122,14 +134,13 @@ public class ProjectListFragment extends ListFragment
 
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 		
+		int selected = getListView().getSelectedItemPosition();
+		if (selected < 0) {
+			selected = 0;
+		}
 		Log.i("ProjectListFragment", "Loaded " + cursor.getCount() + " projects");
 		mAdapter.swapCursor(cursor);
-		
-		if (isResumed()) {
-			setListShown(true);
-		} else {
-			setListShownNoAnimation(true);
-		}
+		getListView().setItemChecked(selected, true);
 	}
 
 	public void onLoaderReset(Loader<Cursor> loader) {

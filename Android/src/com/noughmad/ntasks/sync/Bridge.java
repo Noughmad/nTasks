@@ -1,5 +1,10 @@
-package com.noughmad.ntasks;
+package com.noughmad.ntasks.sync;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -13,10 +18,13 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Environment;
 import android.os.RemoteException;
 import android.provider.BaseColumns;
 
+import com.noughmad.ntasks.Database;
 import com.parse.ParseException;
+import com.parse.ParseFile;
 import com.parse.ParseObject;
 import com.parse.ParseQuery;
 
@@ -49,6 +57,7 @@ public class Bridge {
 		List<String> dateColumns;
 		List<String> textColumns;
 		List<String> intColumns;
+		List<String> fileColumns;
 	}
 
 	private Context mActivity;
@@ -58,17 +67,28 @@ public class Bridge {
 	}
 	
 	void upload(final Options options) throws RemoteException, ParseException {
-		Uri uri = Uri.withAppendedPath(Database.BASE_URI, "local/" + options.className);
+		Uri uri = Uri.withAppendedPath(Database.BASE_URI, Database.IS_LOCAL + "/" + options.className);
 		ContentProviderClient client = mActivity.getContentResolver().acquireContentProviderClient(uri);
 		
 		List<String> columns = new ArrayList<String>();
 		columns.add(options.className + "." + Database.ID);
 		columns.add(Database.KEY_OBJECT);
 		columns.add(KEY_OBJECT_PARSEID);
-		columns.addAll(options.foreignKeys.keySet());
-		columns.addAll(options.textColumns);
-		columns.addAll(options.intColumns);
-		columns.addAll(options.dateColumns);
+		if (options.foreignKeys != null) {
+			columns.addAll(options.foreignKeys.keySet());
+		}
+		if (options.textColumns != null) {
+			columns.addAll(options.textColumns);
+		}
+		if (options.intColumns != null) {
+			columns.addAll(options.intColumns);
+		}
+		if (options.dateColumns != null) {
+			columns.addAll(options.dateColumns);
+		}
+		if (options.fileColumns != null) {
+			columns.addAll(options.fileColumns);
+		}
 		Map<Long,ParseObject> objects = new HashMap<Long,ParseObject>();
 		
 		Cursor cursor = client.query(uri, columns.toArray(new String[] {}), null, null, null);
@@ -98,6 +118,26 @@ public class Bridge {
 			}
 			for (String entry : options.dateColumns) {
 				object.put(entry, new Date(cursor.getLong(i)));
+				++i;
+			}
+			for (String entry : options.fileColumns) {
+				File file = new File(cursor.getString(i));
+				if (file.exists() && file.isFile()) {
+					byte[] buffer = new byte[(int) file.length()];
+					try {
+						FileInputStream stream = new FileInputStream(file);
+						stream.read(buffer);
+						stream.close();
+
+						ParseFile pf = new ParseFile("icon.png", buffer);
+						pf.save();
+						
+						object.put(entry, file);
+					} catch (IOException e) {
+						e.printStackTrace();
+						object.remove(entry);
+					}
+				}
 				++i;
 			}
 			
@@ -132,6 +172,10 @@ public class Bridge {
 		List<ParseObject> objects = query.find();
 		ContentProviderClient client = mActivity.getContentResolver().acquireContentProviderClient(uri);
 		for (ParseObject object : objects) {
+			Cursor existing = client.query(Uri.withAppendedPath(uri, Database.EXISTS_PARSE_ID + "/" + object.getObjectId()), new String[] {options.className + '.' + Database.ID}, null, null, null);
+			boolean exists = existing.moveToFirst();
+			existing.close();
+			
 			ContentValues values = new ContentValues();
 			for (String entry : options.textColumns) {
 				values.put(entry, object.getString(entry));
@@ -139,9 +183,30 @@ public class Bridge {
 			for (String entry : options.intColumns) {
 				values.put(entry, object.getInt(entry));
 			}
-			// TODO: Fix the URI or selection to filter by object.parseObjectId
-			Cursor existing = client.query(Uri.withAppendedPath(uri, Database.EXISTS_PARSE_ID + "/" + object.getObjectId()), new String[] {options.className + '.' + Database.ID}, null, null, null);
-			if (existing.moveToFirst()) {
+			for (String entry : options.dateColumns) {
+				values.put(entry, object.getDate(entry).getTime());
+			}
+			for (String entry : options.fileColumns) {
+				ParseFile pf = (ParseFile) object.get(entry);
+				byte[] buffer = pf.getData();
+				
+				File file = new File(
+					mActivity.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+					"project_icon_" + object.getObjectId() + ".png"
+				);
+				try {
+					FileOutputStream stream = new FileOutputStream(file);
+					stream.write(buffer);
+					stream.close();
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+				values.put(entry, file.getAbsolutePath());
+			}
+			if (exists) {
 				// A record for this object already exists
 				long id = existing.getLong(0);
 				client.update(ContentUris.withAppendedId(uri, id), values, null, null);

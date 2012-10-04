@@ -1,7 +1,6 @@
 package com.noughmad.ntasks;
 
 import android.content.ContentResolver;
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -10,6 +9,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.net.Uri;
 import android.provider.BaseColumns;
 import android.util.Log;
+
+import com.noughmad.ntasks.sync.Bridge;
 
 
 public class Database {
@@ -48,6 +49,7 @@ public class Database {
 	public static final String EXISTS_PARSE_ID = "Exists";
 	public static final String IS_LOCAL = "Local";
 	public static final String TIMELINE = "Timeline";
+	public static final String PROJECT_TIMELINE = "ProjectTimeline";
 
 	private Helper mHelper;
 	
@@ -71,131 +73,8 @@ public class Database {
 		mHelper = new Helper(context);
 	}
 	
-	Cursor getProjects() {
-		SQLiteDatabase db = mHelper.getReadableDatabase();
-		return db.query(PROJECT_TABLE_NAME, projectColumns, null, null, null, null, null);
-	}
-	
-	Cursor getTasks(long projectId) {
-		String[] args = new String[] {Long.toString(projectId)};
-		return mHelper.getReadableDatabase().query(TASK_TABLE_NAME, taskColumns, KEY_TASK_PROJECT + " = ?", args, null, null, null);
-	}
-	
-	Cursor getNotes(long taskId) {
-		String[] args = new String[] {Long.toString(taskId)};
-		return mHelper.getReadableDatabase().query(NOTE_TABLE_NAME, noteColumns, KEY_NOTE_TASK + " = ?", args, null, null, null);
-	}
-	
-	long createObject(SQLiteDatabase db, String className) {
-		ContentValues values = new ContentValues();
-		values.put(Bridge.KEY_OBJECT_CLASSNAME, className);
-		values.put(Bridge.KEY_OBJECT_LOCAL, true);
-		return db.insert(Bridge.OBJECT_TABLE_NAME, null, values);
-	}
-	
-	void updateObject(SQLiteDatabase db, long objectId) {
-		ContentValues values = new ContentValues();
-		values.put(Bridge.KEY_OBJECT_LOCAL, true);
-		db.update(Bridge.OBJECT_TABLE_NAME, values, ID + " = ?", new String[] {Long.toString(objectId)});
-	}
-	
-	long createProject(ContentValues values) {
-		long id = 0;
-		SQLiteDatabase db = mHelper.getWritableDatabase();
-		db.beginTransaction();
-		try {
-			long objectId = createObject(db, PROJECT_TABLE_NAME);
-			values.put(KEY_OBJECT, objectId);
-			id = db.insert(PROJECT_TABLE_NAME, null, values);
-			db.setTransactionSuccessful();
-		} finally {
-			db.endTransaction();
-		}
-		return id;
-	}
-	
-	void updateProject(long id, ContentValues values) {
-		Cursor cursor = getProject(id, new String[] {KEY_OBJECT});
-		long objectId = cursor.getLong(0);
-		cursor.close();
-		
-		SQLiteDatabase db = mHelper.getWritableDatabase();
-		db.beginTransaction();
-		try {
-			updateObject(db, objectId);
-			values.put(KEY_OBJECT, objectId);
-			db.update(PROJECT_TABLE_NAME, values, ID + " = ?", new String[] {Long.toString(id)});
-			db.setTransactionSuccessful();
-		} finally {
-			db.endTransaction();
-		}
-	}
-	
-	long createTask(String name, long projectId) {
-		long id = 0;
-		ContentValues values = new ContentValues();
-		values.put(KEY_TASK_NAME, name);
-		values.put(KEY_TASK_PROJECT, projectId);
-		values.put(KEY_TASK_DURATION, 0);
-		values.put(KEY_TASK_ACTIVE, false);
-
-		SQLiteDatabase db = mHelper.getWritableDatabase();
-		db.beginTransaction();
-		try {
-			values.put(KEY_OBJECT, createObject(db, PROJECT_TABLE_NAME));
-			id = db.insert(PROJECT_TABLE_NAME, null, values);
-			db.setTransactionSuccessful();
-		} finally {
-			db.endTransaction();
-		}
-		
-		return id;
-	}
-	
-	void startTask(long taskId) {
-		ContentValues values = new ContentValues();
-		values.put(KEY_TASK_ACTIVE, 1);
-		values.put(KEY_TASK_LASTSTART, System.currentTimeMillis());
-		String[] args = new String[] {Long.toString(taskId)};
-		mHelper.getWritableDatabase().update(TASK_TABLE_NAME, values, ID + " = ?", args);
-	}
-	
-	void stopTask(long taskId) {
-		String where = ID + " = ? AND " + KEY_TASK_ACTIVE + " = 1";
-		String[] args = new String[] {Long.toString(taskId)};
-
-		ContentValues values = new ContentValues();
-		
-		Cursor cursor = mHelper.getReadableDatabase().query(TASK_TABLE_NAME, taskColumns, where, args, null, null, null);
-		if (!cursor.moveToFirst()) {
-			return;
-		}
-		
-		long start = cursor.getLong(cursor.getColumnIndex(KEY_TASK_LASTSTART));
-		long unitDuration = System.currentTimeMillis() - start;
-		long taskDuration = cursor.getLong(cursor.getColumnIndex(KEY_TASK_DURATION)) + unitDuration;
-		
-		SQLiteDatabase db = mHelper.getWritableDatabase();
-		db.beginTransaction();
-		try {
-			values.put(KEY_TASK_DURATION, taskDuration);
-			values.put(KEY_TASK_ACTIVE, 0);
-			db.update(TASK_TABLE_NAME, values, where, args);
-			
-			ContentValues unitValues = new ContentValues();
-			unitValues.put(KEY_WORKUNIT_START, start);
-			unitValues.put(KEY_WORKUNIT_END, System.currentTimeMillis());
-			unitValues.put(KEY_WORKUNIT_DURATION, unitDuration);
-			
-			db.insert(WORKUNIT_TABLE_NAME, null, unitValues);
-			db.setTransactionSuccessful();
-		} finally {
-			db.endTransaction();
-		}
-	}
-	
 	private class Helper extends SQLiteOpenHelper {
-		private static final int DATABASE_VERSION = 11;
+		private static final int DATABASE_VERSION = 1;
 		private static final String DATABASE_NAME = "nTasks";
 
 
@@ -242,6 +121,17 @@ public class Database {
                 KEY_WORKUNIT_DURATION + " INTEGER, " +
                 "FOREIGN KEY(" + KEY_WORKUNIT_TASK + ") REFERENCES " + TASK_TABLE_NAME + "(" + BaseColumns._ID + ") ON DELETE CASCADE, " +
                 "FOREIGN KEY(" + KEY_OBJECT + ") REFERENCES " + Bridge.OBJECT_TABLE_NAME + "(" + BaseColumns._ID + ") ON DELETE CASCADE);";
+	    
+	    private static final String TIMELINE_VIEW_CREATE = 
+	    		"CREATE VIEW " + TIMELINE + " AS SELECT " + 
+	    		TASK_TABLE_NAME + "." + ID + " AS " + ID + ", " +
+				TASK_TABLE_NAME + "." + KEY_TASK_NAME + " AS " + KEY_TASK_NAME + ", " +
+				TASK_TABLE_NAME + "." + KEY_TASK_PROJECT + " AS " + KEY_TASK_PROJECT + ", " +
+				WORKUNIT_TABLE_NAME + "." + KEY_WORKUNIT_START + " AS " + KEY_WORKUNIT_START + ", " +
+				WORKUNIT_TABLE_NAME + "." + KEY_WORKUNIT_END + " AS " + KEY_WORKUNIT_END + ", " +
+				WORKUNIT_TABLE_NAME + "." + KEY_WORKUNIT_DURATION + " AS " + KEY_WORKUNIT_DURATION +  
+				" FROM " + TASK_TABLE_NAME + ", " + WORKUNIT_TABLE_NAME + 
+				" WHERE " + TASK_TABLE_NAME + "." + ID + " = " + WORKUNIT_TABLE_NAME + "." + KEY_WORKUNIT_TASK;
     
 	    Helper(Context context) {
 	        super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -249,18 +139,14 @@ public class Database {
 
 	    @Override
 	    public void onCreate(SQLiteDatabase db) {
-	    	String TAG = "Database.Helper.onCreate()";
-	    	Log.d(TAG, Bridge.OBJECT_TABLE_CREATE);
-	    	Log.d(TAG, PROJECT_TABLE_CREATE);
-	    	Log.d(TAG, TASK_TABLE_CREATE);
-	    	Log.d(TAG, NOTE_TABLE_CREATE);
-	    	Log.d(TAG, WORKUNIT_TABLE_CREATE);
 	    	try {
 	    		db.execSQL(Bridge.OBJECT_TABLE_CREATE);
 	    		db.execSQL(PROJECT_TABLE_CREATE);
 	    		db.execSQL(TASK_TABLE_CREATE);
 	    		db.execSQL(NOTE_TABLE_CREATE);
 	    		db.execSQL(WORKUNIT_TABLE_CREATE);
+	    		
+	    		db.execSQL(TIMELINE_VIEW_CREATE);
 	    	} catch (SQLiteException e) {
 	    		e.printStackTrace();
 	    		Log.e("Database.Helper", e.getMessage());
@@ -269,12 +155,7 @@ public class Database {
 
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-			if (db.isReadOnly()) {
-			}
-			if (oldVersion < 11) {
-				db.execSQL("ALTER TABLE " + PROJECT_TABLE_NAME + 
-						" ADD COLUMN " + KEY_PROJECT_ICON + " TEXT;");
-			}
+			
 		}
 		
 		@Override

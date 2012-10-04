@@ -3,14 +3,15 @@ package com.noughmad.ntasks;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.ListView;
 
+import com.noughmad.ntasks.sync.SyncService;
 import com.parse.ParseUser;
 
 public class MainActivity extends IconGetterActivity {
@@ -58,12 +59,6 @@ public class MainActivity extends IconGetterActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
-		case R.id.menu_logout:
-			ParseUser.logOut();
-			Intent i = new Intent(this, AccountActivity.class);
-			startActivityForResult(i, LOGIN_REQUEST);
-			break;
-			
 		case R.id.menu_add_project:
 			FragmentTransaction ft = getFragmentManager().beginTransaction();
 		    Fragment prev = getFragmentManager().findFragmentByTag("project-dialog");
@@ -77,10 +72,28 @@ public class MainActivity extends IconGetterActivity {
 		    newFragment.show(ft, "project-dialog");
 		    break;
 		    
+		case R.id.menu_add_task:
+			ProjectListFragment fragment = (ProjectListFragment) getFragmentManager().findFragmentById(R.id.project_list);
+			if (fragment == null) {
+				Log.w(TAG, "Could not find project list fragment");
+				return false;
+			}
+			ListView list = fragment.getListView();
+			if (list.getCheckedItemCount() == 0) {
+				return false;
+			}
+			long projectId = list.getItemIdAtPosition(list.getCheckedItemPosition());
+			if (projectId == ListView.INVALID_ROW_ID) {
+				Log.w(TAG, "Project list fragment has no selected projects " + fragment.getListView().getCount());
+				return false;
+			} 
+			Utils.addTask(projectId, this);
+			return true;
+		    
 		case R.id.menu_refresh:
 			if (ParseUser.getCurrentUser() == null) {
 				Log.i(TAG, "No current user, showing login dialog");
-				Intent intent = new Intent(this, AccountActivity.class);
+				Intent intent = new Intent(this, SettingsActivity.class);
 				startActivityForResult(intent, LOGIN_REQUEST);
 			} else {
 				startSync();
@@ -91,19 +104,13 @@ public class MainActivity extends IconGetterActivity {
 			Intent intent = new Intent(this, SettingsActivity.class);
 			startActivity(intent);
 			break;
-			
-		case R.id.menu_statistics:
-			showPlots();
-			break;
 		}
 		return true;
 	}
 	
 	private void startSync() {
-		startService(new Intent(this, SyncService.class));
-	}
-	
-	private void showPlots() {
-		// TODO:
+		Intent intent = new Intent(this, SyncService.class);
+		intent.putExtra("manual", true);
+		startService(intent);
 	}
 }

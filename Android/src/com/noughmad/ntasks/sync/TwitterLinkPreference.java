@@ -1,4 +1,4 @@
-package com.noughmad.ntasks;
+package com.noughmad.ntasks.sync;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -17,9 +17,8 @@ public class TwitterLinkPreference extends CheckBoxPreference {
 		super(context, attrs);
 		
 		ParseUser user = ParseUser.getCurrentUser();
-		setEnabled(user != null && user.isAuthenticated());
 		
-		if (user != null && ParseTwitterUtils.isLinked(ParseUser.getCurrentUser())) {
+		if (user != null && ParseTwitterUtils.isLinked(user)) {
 			setSummaryOn("Linked as " + ParseTwitterUtils.getTwitter().getScreenName());
 		}
 	}

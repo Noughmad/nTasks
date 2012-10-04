@@ -3,6 +3,8 @@ package com.noughmad.ntasks;
 import java.util.Arrays;
 import java.util.List;
 
+import com.noughmad.ntasks.sync.Bridge;
+
 import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -143,10 +145,6 @@ public class TasksProvider extends ContentProvider {
 			String[] selectionArgs, String sortOrder) {
 		int match = sUriMatcher.match(uri);
 		Log.i(TAG, "Query: " + uri + " => " + match);
-		Uri test = Uri.parse("content://" + sAuth + "/Timeline");
-		Log.i(TAG, "Test : " + test + " => " + sUriMatcher.match(test));
-		test = Uri.parse("content://" + sAuth + "/Task/Exists/omg");
-		Log.i(TAG, "Local: " + test + " => " + sUriMatcher.match(test));
 		
 		if (match == 12) {
 			// Objects with local changes
@@ -159,24 +157,14 @@ public class TasksProvider extends ContentProvider {
 			cursor.setNotificationUri(getContext().getContentResolver(), uri);
 			return cursor;
 		} else if (match == 14 || match == 15) {
-			// Timeline, show latest work units for all projects
-			String[] columns = new String[] {
-					Database.TASK_TABLE_NAME + "." + Database.ID, 
-					Database.TASK_TABLE_NAME + "." + Database.KEY_TASK_NAME,
-					Database.TASK_TABLE_NAME + "." + Database.KEY_TASK_PROJECT,
-					Database.WORKUNIT_TABLE_NAME + "." + Database.KEY_WORKUNIT_START,
-					Database.WORKUNIT_TABLE_NAME + "." + Database.KEY_WORKUNIT_END,
-					Database.WORKUNIT_TABLE_NAME + "." + Database.KEY_WORKUNIT_DURATION,
-			};
-			String sel = Database.TASK_TABLE_NAME + "." + Database.ID + " = " + Database.WORKUNIT_TABLE_NAME + "." + Database.KEY_WORKUNIT_TASK; 
-
+			String sel = null;
 			String[] args = null;
 			if (match == 15) {
-				sel = sel + " AND " + Database.TASK_TABLE_NAME + "." + Database.KEY_TASK_PROJECT + " = ?";
+				sel = Database.KEY_TASK_PROJECT + " = ?";
 				args = new String[] {uri.getLastPathSegment()};
 			}
-			String tables = Database.WORKUNIT_TABLE_NAME + ", " + Database.TASK_TABLE_NAME;
-			Cursor cursor = db.getReadableDatabase().query(tables, columns, sel, args, null, null, sortOrder);
+			
+			Cursor cursor = db.getReadableDatabase().query(Database.TIMELINE, null, sel, args, null, null, sortOrder);
 			cursor.setNotificationUri(getContext().getContentResolver(), uri);
 			return cursor;
 		}
@@ -194,6 +182,10 @@ public class TasksProvider extends ContentProvider {
 				selectionArgs = Arrays.copyOf(selectionArgs, n + 1);
 				selectionArgs[n] = uri.getLastPathSegment();
 			}
+		}
+		Log.d(TAG, "Query: " + getTableName(uri) + ", " + selection);
+		if (selectionArgs != null && selectionArgs.length > 0) {
+			Log.d(TAG, "Query: " + selectionArgs[0]);
 		}
 		Cursor cursor = db.getReadableDatabase().query(getTableName(uri), projection, selection, selectionArgs, null, null, sortOrder);
 		cursor.setNotificationUri(getContext().getContentResolver(), uri);

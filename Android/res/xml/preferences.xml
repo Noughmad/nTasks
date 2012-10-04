@@ -1,21 +1,30 @@
     <PreferenceScreen 
         xmlns:android="http://schemas.android.com/apk/res/android">
         <CheckBoxPreference 
-            android:defaultValue="true" 
-            android:title="Show offline warning" 
-            android:summaryOff="No warning is shown" 
-            android:summaryOn="Warning is shown" 
-            android:key="warnNoNetwork"/>
+            android:summaryOff="Periodic sync disabled" 
+            android:key="automaticSync" 
+            android:title="@string/periodic_sync"
+            android:icon="@drawable/ic_menu_cloud"
+            android:summaryOn="Periodic sync enabled"/>
+        
         <PreferenceCategory android:title="My Account">
-            <com.noughmad.ntasks.FacebookLinkPreference
+            <com.noughmad.ntasks.sync.FacebookLinkPreference
                 android:defaultValue="false"
-                android:title="Link with Facebook"
+                android:title="Log in with Facebook"
                 android:summaryOff="Not linked"
                 android:key="linkWithFacebook" />
-            <com.noughmad.ntasks.TwitterLinkPreference
+            <com.noughmad.ntasks.sync.TwitterLinkPreference
                 android:defaultValue="false"
-                android:title="Link with Twitter"
+                android:title="Log in with Twitter"
                 android:summaryOff="Not linked"
                 android:key="linkWithTwitter" />
+            
+            <com.noughmad.ntasks.sync.LogInPreference
+                android:dialogLayout="@layout/login"
+                android:positiveButtonText="@string/login"
+                android:title="@string/login_ntasks"
+                android:summary="@string/login_ntasks_summary"
+                android:key="parseUsername" />
         </PreferenceCategory>
+        
     </PreferenceScreen>

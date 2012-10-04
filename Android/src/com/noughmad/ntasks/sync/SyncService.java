@@ -1,4 +1,4 @@
-package com.noughmad.ntasks;
+package com.noughmad.ntasks.sync;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,7 +15,10 @@ import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.os.RemoteException;
 
-import com.noughmad.ntasks.Bridge.Options;
+import com.noughmad.ntasks.Database;
+import com.noughmad.ntasks.R;
+import com.noughmad.ntasks.Utils;
+import com.noughmad.ntasks.sync.Bridge.Options;
 import com.parse.ParseException;
 import com.parse.ParseUser;
 
@@ -35,7 +38,7 @@ public class SyncService extends IntentService {
 		projectOptions.foreignKeys = new HashMap<String,String>();
 		projectOptions.textColumns = Arrays.asList(Database.KEY_PROJECT_TITLE, Database.KEY_PROJECT_CLIENT, Database.KEY_PROJECT_DESCRIPTION);
 		projectOptions.intColumns = Arrays.asList(Database.KEY_PROJECT_CATEGORY);
-		projectOptions.dateColumns = new ArrayList<String>();
+		projectOptions.fileColumns = Arrays.asList(Database.KEY_PROJECT_ICON);
 		sOptions.put(Database.PROJECT_TABLE_NAME, projectOptions);
 		sAllOptions.add(projectOptions);
 		
@@ -54,8 +57,6 @@ public class SyncService extends IntentService {
 		noteOptions.foreignKeys = new HashMap<String,String>();
 		noteOptions.foreignKeys.put(Database.KEY_NOTE_TASK, Database.TASK_TABLE_NAME);
 		noteOptions.textColumns = Arrays.asList(Database.KEY_NOTE_TEXT);
-		noteOptions.intColumns = Arrays.asList();
-		noteOptions.dateColumns = Arrays.asList();
 		sOptions.put(Database.NOTE_TABLE_NAME, noteOptions);
 		sAllOptions.add(noteOptions);
 		
@@ -63,7 +64,6 @@ public class SyncService extends IntentService {
 		unitOptions.className = Database.WORKUNIT_TABLE_NAME;
 		unitOptions.foreignKeys = new HashMap<String,String>();
 		unitOptions.foreignKeys.put(Database.KEY_WORKUNIT_TASK, Database.TASK_TABLE_NAME);
-		unitOptions.textColumns = Arrays.asList();
 		unitOptions.intColumns = Arrays.asList(Database.KEY_WORKUNIT_DURATION);
 		unitOptions.dateColumns = Arrays.asList(Database.KEY_WORKUNIT_START, Database.KEY_WORKUNIT_END);
 		sOptions.put(Database.WORKUNIT_TABLE_NAME, unitOptions);
@@ -78,6 +78,11 @@ public class SyncService extends IntentService {
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		if (ParseUser.getCurrentUser() == null) {
+			stopSelf();
+			return;
+		}
+		
+		if (!intent.getBooleanExtra("manual", false) && !getSharedPreferences("nTasks", MODE_PRIVATE).getBoolean("automaticSync", true)) {
 			stopSelf();
 			return;
 		}

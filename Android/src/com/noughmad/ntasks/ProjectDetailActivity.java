@@ -2,13 +2,10 @@ package com.noughmad.ntasks;
 
 import android.app.ActionBar;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.ContentProviderClient;
-import android.content.ContentValues;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -18,8 +15,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.EditText;
 import android.widget.SimpleCursorAdapter;
 
 public class ProjectDetailActivity extends Activity {
@@ -101,38 +96,7 @@ public class ProjectDetailActivity extends Activity {
 			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 			startActivity(intent);
 		} else if (item.getItemId() == R.id.menu_add_task) {
-			AlertDialog.Builder builder = new AlertDialog.Builder(this);
-			builder.setTitle(R.string.add_task);
-			
-			final View view = getLayoutInflater().inflate(R.layout.task_add, null, false);
-			builder.setView(view);
-			builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					dialog.dismiss();	
-				}
-			});
-			builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-				public void onClick(DialogInterface dialog, int which) {
-					EditText edit = (EditText) view;
-					if (edit.getText().toString().isEmpty()) {
-						return;
-					}
-					
-					Uri uri = Uri.withAppendedPath(Database.BASE_URI, Database.TASK_TABLE_NAME);
-					ContentProviderClient client = getContentResolver().acquireContentProviderClient(uri);
-					ContentValues values = new ContentValues();
-					values.put(Database.KEY_TASK_PROJECT, mProjectId);
-					values.put(Database.KEY_TASK_NAME, edit.getText().toString());
-					values.put(Database.KEY_TASK_STATUS, 1);
-					try {
-						client.insert(uri, values);
-					} catch (RemoteException e) {
-						e.printStackTrace();
-					}
-					client.release();
-				}
-			});
-			builder.create().show();
+			Utils.addTask(mProjectId, this);
 		} else if (item.getItemId() == R.id.menu_refresh) {
 			
 			// TODO: Replace refresh with sync

@@ -95,6 +95,7 @@ public class TaskTreeAdapter extends AdapterTreeAdapter
 
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 		Log.i(TAG, "Loaded cursor for id " + loader.getId());
+		Log.i(TAG, "with " + cursor.getCount() + " records");
 		ListAdapter adapter;
 		if (loader.getId() < 0) {
 			adapter = getGroupAdapter();
@@ -116,6 +117,8 @@ public class TaskTreeAdapter extends AdapterTreeAdapter
 
 	public void setProject(long id) {
 		mProjectId = id;
-		((Activity)mContext).getLoaderManager().initLoader(-1, null, this);
+		LoaderManager lm = ((Activity)mContext).getLoaderManager();
+		lm.destroyLoader(-1);
+		lm.initLoader(-1, null, this);
 	}	
 }

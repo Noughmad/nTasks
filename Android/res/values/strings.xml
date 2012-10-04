@@ -23,7 +23,10 @@
     <string name="project_name">Project name</string>
     <string name="project_description">Project description</string>
     <string name="project_client">Client</string>
-    <string name="refresh">Refresh</string>
+    <string name="refresh">Sync</string>
+    <string name="periodic_sync">Sync Automatically</string>
+    <string name="login_ntasks">Log in with nTasks</string>
+    <string name="login_ntasks_summary">Log in with username and password</string>
     <string name="no_network_title">Using nTasks without a network connection.</string>
     <string name="no_network_message">You can still edit your tasks and track time, but the changes will only be saved 
         once you are connected to the internet. </string>
@@ -36,7 +39,8 @@
     
     <string name="permission_write">Edit Projects and Tasks</string>
     <string name="permission_write_description">Allows the application to modify all nTasks data</string>
-    <string name="notification_sync_text">Synchronizing data with server...</string>
+    <string name="notification_sync_text">Synchronizing data with server&#8230;</string>
+    <string name="loading">Loading&#8230;</string>
     
     <string-array name="task_status_array">
         <item>Urgent</item>

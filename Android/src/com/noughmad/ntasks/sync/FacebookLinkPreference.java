@@ -1,4 +1,4 @@
-package com.noughmad.ntasks;
+package com.noughmad.ntasks.sync;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -16,7 +16,6 @@ import android.util.AttributeSet;
 import com.parse.LogInCallback;
 import com.parse.ParseException;
 import com.parse.ParseFacebookUtils;
-import com.parse.ParseTwitterUtils;
 import com.parse.ParseUser;
 import com.parse.SaveCallback;
 import com.parse.facebook.AsyncFacebookRunner;
@@ -30,7 +29,6 @@ public class FacebookLinkPreference extends CheckBoxPreference {
 		super(context, attrs);
 		
 		ParseUser user = ParseUser.getCurrentUser();
-		setEnabled(user != null && user.isAuthenticated());
 		
 		if (user != null && ParseFacebookUtils.isLinked(user)) {
 			setAccountName();

@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentProviderClient;
 import android.content.ContentUris;
@@ -197,5 +198,42 @@ public class Utils {
 			return R.drawable.ic_menu_mark;
 		}
 		return 0;
+	}
+
+	public static void addTask(final long projectId, final Activity activity) {
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+		builder.setTitle(R.string.add_task);
+		
+		final View view = activity.getLayoutInflater().inflate(R.layout.task_add, null, false);
+		builder.setView(view);
+		builder.setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();	
+			}
+		});
+		builder.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				EditText edit = (EditText) view;
+				if (edit.getText().toString().isEmpty()) {
+					return;
+				}
+				
+				Uri uri = Uri.withAppendedPath(Database.BASE_URI, Database.TASK_TABLE_NAME);
+				ContentProviderClient client = activity.getContentResolver().acquireContentProviderClient(uri);
+				Log.i(TAG, "Creating a task in project " + projectId);
+				ContentValues values = new ContentValues();
+				values.put(Database.KEY_TASK_PROJECT, projectId);
+				values.put(Database.KEY_TASK_NAME, edit.getText().toString());
+				values.put(Database.KEY_TASK_STATUS, 1);
+				try {
+					client.insert(uri, values);
+				} catch (RemoteException e) {
+					e.printStackTrace();
+				}
+				client.release();
+			}
+		});
+		builder.create().show();
 	}
 }
