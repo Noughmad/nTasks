@@ -30,8 +30,12 @@ public class ProjectListFragment extends ListFragment
 	@Override
 	public void onListItemClick(ListView l, View v, int position, long id) {
 		if (getResources().getBoolean(R.bool.two_pane_layout)) {
-			ProjectDetailFragment fragment = (ProjectDetailFragment) getActivity().getFragmentManager().findFragmentById(R.id.project_detail);
+			TaskListFragment fragment = (TaskListFragment) getFragmentManager().findFragmentById(R.id.tasks_fragment);
 			fragment.showProject(id);
+			TimelineFragment timeline = (TimelineFragment) getFragmentManager().findFragmentById(R.id.timeline_fragment);
+			timeline.showProject(id);
+			NotesFragment notes = (NotesFragment) getFragmentManager().findFragmentById(R.id.notes_fragment);
+			notes.showProject(id);
 		} else {
 			Intent intent = new Intent(getActivity(), ProjectDetailActivity.class);
 			intent.putExtra("projectId", id);

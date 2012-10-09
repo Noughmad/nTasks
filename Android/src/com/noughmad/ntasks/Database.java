@@ -1,6 +1,7 @@
 package com.noughmad.ntasks;
 
 import android.content.ContentResolver;
+import android.content.ContentUris;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -68,6 +69,15 @@ public class Database {
 	static String[] workUnitColumns = new String [] {
 		ID, KEY_WORKUNIT_TASK, KEY_WORKUNIT_START, KEY_WORKUNIT_END, KEY_WORKUNIT_DURATION, KEY_OBJECT
 	};
+
+	public final static String KEY_PROJECT_NOTE = "note";
+	
+	public static Uri withTable(String table) {
+		return Uri.withAppendedPath(BASE_URI, table);
+	}
+	public static Uri withId(String table, long id) {
+		return ContentUris.withAppendedId(withTable(table), id);
+	}
 	
 	public Database(Context context) {
 		mHelper = new Helper(context);
@@ -87,6 +97,7 @@ public class Database {
 	                KEY_PROJECT_DESCRIPTION + " TEXT, " +
 	                KEY_PROJECT_CATEGORY + " INTEGER, " + 
 	                KEY_PROJECT_ICON + " TEXT, " +
+	                KEY_PROJECT_NOTE + " TEXT, " +
 	                "FOREIGN KEY(" + KEY_OBJECT + ") REFERENCES " + Bridge.OBJECT_TABLE_NAME + "(" + BaseColumns._ID + ") ON DELETE CASCADE);";
 
 	    private static final String TASK_TABLE_CREATE =

@@ -10,6 +10,9 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.HeaderViewListAdapter;
 import android.widget.ListView;
@@ -23,6 +26,36 @@ public class TimelineFragment extends ListFragment
 	implements LoaderManager.LoaderCallbacks<Cursor> {
 	
 	private long mProjectId;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		if (savedInstanceState != null && savedInstanceState.containsKey("projectId")) {
+			mProjectId = savedInstanceState.getLong("projectId");
+		} else if (getArguments() != null) {
+			mProjectId = getArguments().getLong("projectId", -1);
+		} else {
+			mProjectId = -1;
+		}
+	}
+	
+	
+	
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		View v = super.onCreateView(inflater, container, savedInstanceState);
+		v.setBackgroundResource(android.R.color.holo_green_light);
+		return v;
+	}
+
+
+
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
+		super.onSaveInstanceState(outState);
+		outState.putLong("projectId", mProjectId);
+	}
 	
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -68,5 +101,10 @@ public class TimelineFragment extends ListFragment
 
 	public void onLoaderReset(Loader<Cursor> loader) {
 		((CursorAdapter)((HeaderViewListAdapter)getListAdapter()).getWrappedAdapter()).swapCursor(null);		
+	}
+
+	public void showProject(long id) {
+		mProjectId = id;
+		getLoaderManager().restartLoader(0,  null,  this);
 	}
 }

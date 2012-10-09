@@ -1,13 +1,12 @@
 package com.noughmad.ntasks;
 
 import android.app.AlertDialog;
-import android.app.Fragment;
 import android.content.ContentProviderClient;
-import android.content.ContentUris;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,22 +16,20 @@ import android.widget.ExpandableListView;
 
 import com.noughmad.ntasks.tasks.TaskTreeAdapter;
 
-public class ProjectDetailFragment extends Fragment {
+public class TaskListFragment extends Fragment {
 	
 	private long mProjectId;
 	private TaskTreeAdapter mAdapter;
-
-	public static ProjectDetailFragment create(long projectId) {
-		ProjectDetailFragment f = new ProjectDetailFragment();
-		f.mProjectId = projectId;
-		return f;
-	}
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		if (savedInstanceState != null && savedInstanceState.containsKey("projectId")) {
 			mProjectId = savedInstanceState.getLong("projectId");
+		} else if (getArguments() != null) {
+			mProjectId = getArguments().getLong("projectId", -1);
+		} else {
+			mProjectId = -1;
 		}
 	}
 	
@@ -56,13 +53,6 @@ public class ProjectDetailFragment extends Fragment {
 
 		Log.d("ProjectDetailFragment", "onActivityCreated(): " + mProjectId);
 		
-		try {
-			ProjectDetailActivity projectDetailActivity = (ProjectDetailActivity) getActivity();
-			projectDetailActivity.setProject(mProjectId);
-		} catch (ClassCastException e) {
-			// Running in two-pane mode
-		}
-		
 		mAdapter = new TaskTreeAdapter(getActivity(), mProjectId, getListView());
 		getListView().setAdapter(mAdapter);
 
@@ -83,7 +73,7 @@ public class ProjectDetailFragment extends Fragment {
 							Utils.addNote(id, getActivity());
 							break;
 						case 2: // Delete
-							Uri uri = ContentUris.withAppendedId(Uri.withAppendedPath(Database.BASE_URI, Database.TASK_TABLE_NAME), id);
+							Uri uri = Database.withId(Database.TASK_TABLE_NAME, id);
 							ContentProviderClient client = getActivity().getContentResolver().acquireContentProviderClient(uri);
 							try {
 								client.delete(uri, null, null);
