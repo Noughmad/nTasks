@@ -3,6 +3,7 @@ package com.noughmad.ntasks;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -55,6 +56,8 @@ public class MainActivity extends IconGetterActivity {
 		inflater.inflate(R.menu.main_actions, menu);
 		return true;
 	}
+	
+	
 	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {

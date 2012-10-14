@@ -1,25 +1,27 @@
 package com.noughmad.ntasks;
 
 import android.app.AlertDialog;
+import android.app.ListFragment;
+import android.app.LoaderManager;
 import android.content.ContentProviderClient;
+import android.content.CursorLoader;
 import android.content.DialogInterface;
+import android.content.Loader;
+import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
-import android.app.Fragment;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ExpandableListView;
+import android.widget.CursorAdapter;
 
-import com.noughmad.ntasks.tasks.TaskTreeAdapter;
+import com.noughmad.ntasks.tasks.TaskListAdapter;
 
-public class TaskListFragment extends Fragment {
+public class TaskListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	
 	private long mProjectId;
-	private TaskTreeAdapter mAdapter;
+	private TaskListAdapter mAdapter;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -40,21 +42,13 @@ public class TaskListFragment extends Fragment {
 	}
 
 	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container,
-			Bundle savedInstanceState) {
-		Log.d("ProjectDetailFragment", "onCreateView(): " + mAdapter);
-		ExpandableListView v = new ExpandableListView(inflater.getContext());
-		return v;
-	}
-
-	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
 		Log.d("ProjectDetailFragment", "onActivityCreated(): " + mProjectId);
 		
-		mAdapter = new TaskTreeAdapter(getActivity(), mProjectId, getListView());
-		getListView().setAdapter(mAdapter);
+		mAdapter = new TaskListAdapter(getActivity(), null);
+		setListAdapter(mAdapter);
 
 		getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 	
@@ -69,10 +63,7 @@ public class TaskListFragment extends Fragment {
 						case 0: // Rename
 							// TODO;
 							break;
-						case 1: // Add Note
-							Utils.addNote(id, getActivity());
-							break;
-						case 2: // Delete
+						case 1: // Delete
 							Uri uri = Database.withId(Database.TASK_TABLE_NAME, id);
 							ContentProviderClient client = getActivity().getContentResolver().acquireContentProviderClient(uri);
 							try {
@@ -88,14 +79,39 @@ public class TaskListFragment extends Fragment {
 				return true;
 			}
 		});
-	}
-	
-	ExpandableListView getListView() {
-		return (ExpandableListView) getView();
+		
+		setListShown(false);
+		getLoaderManager().initLoader(0, null, this);
 	}
 	
 	public void showProject(long id) {
-		mProjectId = id;
-		mAdapter.setProject(id);
+		setListShown(false);
+		if (mProjectId < 0) {
+			mProjectId = id;
+			getLoaderManager().initLoader(0, null, this);
+		} else {
+			mProjectId = id;
+			getLoaderManager().restartLoader(0, null, this);
+		}
+	}
+
+	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+		Uri uri = Database.withTable(Database.TASK_TABLE_NAME);
+		String[] columns = Database.taskColumns;
+		return new CursorLoader(getActivity(), uri, columns, Database.KEY_TASK_PROJECT + " = ?", new String[] {Long.toString(mProjectId)}, null);
+	}
+
+	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+		((CursorAdapter)getListAdapter()).swapCursor(cursor);		
+		
+		if (isResumed()) {
+			setListShown(true);
+		} else {
+			setListShownNoAnimation(true);
+		}
+	}
+
+	public void onLoaderReset(Loader<Cursor> loader) {
+		((CursorAdapter)getListAdapter()).swapCursor(null);		
 	}
 }
