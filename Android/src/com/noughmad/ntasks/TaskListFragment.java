@@ -21,7 +21,6 @@ import com.noughmad.ntasks.tasks.TaskListAdapter;
 public class TaskListFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	
 	private long mProjectId;
-	private TaskListAdapter mAdapter;
 	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -47,8 +46,7 @@ public class TaskListFragment extends ListFragment implements LoaderManager.Load
 
 		Log.d("ProjectDetailFragment", "onActivityCreated(): " + mProjectId);
 		
-		mAdapter = new TaskListAdapter(getActivity(), null);
-		setListAdapter(mAdapter);
+		setListAdapter(new TaskListAdapter(getActivity(), null));
 
 		getListView().setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 	

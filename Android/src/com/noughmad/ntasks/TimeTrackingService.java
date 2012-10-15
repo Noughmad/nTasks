@@ -1,7 +1,6 @@
 package com.noughmad.ntasks;
 
 import android.app.IntentService;
-import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.ContentProviderClient;
 import android.content.ContentUris;
@@ -11,6 +10,7 @@ import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.RemoteException;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 public class TimeTrackingService extends IntentService {
@@ -30,7 +30,7 @@ public class TimeTrackingService extends IntentService {
 		
 		Log.i("TimeTrackingService", "Handle intent " + id);
 		
-		Uri uri = ContentUris.withAppendedId(Uri.withAppendedPath(Database.BASE_URI, Database.TASK_TABLE_NAME), id);
+		Uri uri = Database.withId(Database.TASK_TABLE_NAME, id);
 		ContentProviderClient client = getContentResolver().acquireContentProviderClient(uri);
 		
 		String columns[] = new String[] {Database.KEY_TASK_NAME, Database.KEY_TASK_PROJECT, Database.KEY_TASK_DURATION};
@@ -51,24 +51,26 @@ public class TimeTrackingService extends IntentService {
 				stopSelf();
 				return;
 			}
-					
-			Notification.Builder builder = new Notification.Builder(this);
+			
+			NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
 			builder.setContentTitle(task.getString(0));
 			builder.setContentText(project.getString(1));
 			builder.setContentInfo(Utils.formatDuration(task.getLong(2)));
 			builder.setLargeIcon(BitmapFactory.decodeResource(getResources(), Utils.getLargeCategoryDrawable(project.getInt(2))));
 			builder.setSmallIcon(R.drawable.ic_notification);
 			
-			
 			Intent notificationIntent = new Intent(this, ProjectDetailActivity.class);
 			intent.putExtra("projectId", project.getLong(0));
 			PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 			builder.setContentIntent(pendingIntent);
 			
-			Intent broadcastIntent = new Intent("com.noughmad.ntasks.ACTION_STOP_TRACKING");
-			builder.setDeleteIntent(PendingIntent.getBroadcast(this, 0, broadcastIntent, 0));
+			Intent stopIntent = new Intent("com.noughmad.ntasks.ACTION_STOP_TRACKING");
+			PendingIntent pendingStopIntent = PendingIntent.getBroadcast(this, 0, stopIntent, 0);
+			builder.setDeleteIntent(pendingStopIntent);
+			
+			builder.addAction(android.R.drawable.ic_media_pause, getString(R.string.task_stop), pendingStopIntent);
 						
-			startForeground(Utils.TRACKING_NOTIFICATION, builder.getNotification());
+			startForeground(Utils.TRACKING_NOTIFICATION, builder.build());
 			
 			project.close();
 			task.close();

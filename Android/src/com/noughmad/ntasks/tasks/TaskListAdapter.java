@@ -39,10 +39,12 @@ public class TaskListAdapter extends CursorAdapter {
 		
 		Spinner spinner = (Spinner)view.findViewById(R.id.task_status);
 		spinner.setSelection(cursor.getInt(2));
+		Log.d(TAG, "bitdView: " + cursor.getInt(2));
 		spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
 			public void onItemSelected(AdapterView<?> spinner, View item,
 					int position, long id) {
+				Log.d(TAG, "onItemSelected: " + position);
 				ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(taskUri);
 				ContentValues values = new ContentValues();
 				values.put(Database.KEY_TASK_STATUS, position);
@@ -60,8 +62,9 @@ public class TaskListAdapter extends CursorAdapter {
 		});
 		((TextView)view.findViewById(R.id.task_name)).setText(cursor.getString(1));
 				
+		final boolean active = cursor.getInt(4) != 0;
 		ImageButton button = (ImageButton) view.findViewById(R.id.task_track_button);
-		if (cursor.getInt(4) != 0) {
+		if (active) {
 			button.setImageResource(android.R.drawable.ic_media_pause);
 			// view.setBackgroundResource(R.drawable.list_selector_background_selected);
 		} else {
@@ -69,18 +72,15 @@ public class TaskListAdapter extends CursorAdapter {
 			// view.setBackgroundResource(android.R.drawable.list_selector_background);
 		}
 		
-		final boolean active = cursor.getInt(4) != 0;
 		view.setActivated(active);
 		button.setOnClickListener(new View.OnClickListener() {
 			
 			public void onClick(View v) {
-				ContentProviderClient client = context.getContentResolver().acquireContentProviderClient(taskUri);
 				if (active) {
 					Utils.stopTracking(context);
 				} else {
 					Utils.startTracking(taskId, context);
 				}
-				client.release();
 			}
 		});
 		
@@ -103,7 +103,6 @@ public class TaskListAdapter extends CursorAdapter {
 
 		((LinearLayout)view.findViewById(R.id.task_item_layout)).setShowDividers(LinearLayout.SHOW_DIVIDER_MIDDLE);
 		((LinearLayout)view.findViewById(R.id.task_item_layout)).setDividerPadding(8);
-		bindView(view, context, cursor);
 		return view;
 	}
 }

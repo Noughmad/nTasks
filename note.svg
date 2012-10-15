@@ -16,9 +16,9 @@
    version="1.1"
    inkscape:version="0.48.3.1 r9886"
    sodipodi:docname="note.svg"
-   inkscape:export-filename="/home/miha/Programiranje/Parse/nTasks/note.png"
-   inkscape:export-xdpi="44.615494"
-   inkscape:export-ydpi="44.615494">
+   inkscape:export-filename="/home/miha/Programiranje/Parse/nTasks/Icons/drawable-ldpi/note.png"
+   inkscape:export-xdpi="6.2494702"
+   inkscape:export-ydpi="6.2494702">
   <defs
      id="defs4">
     <linearGradient
@@ -228,7 +228,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -280,8 +280,8 @@
        d="m 57.125,434.71875 c 1.928112,56.3167 -7.479478,114.76757 11.28125,168.9375 27.471967,73.66665 106.68437,122.34073 184.62487,117.45262 42.12031,-0.69192 83.36007,-13.52119 119.68763,-34.67137 5.02137,82.89757 32.84261,166.0598 88.21774,228.92447 41.39021,47.98487 105.73323,77.46089 169.65726,71.32553 18.44553,0.0274 38.21862,2.99037 55.4375,-4.6875 9.61739,-12.68714 3.61457,-29.58495 4.93799,-44.25 0.0544,-167.79166 0.0222,-335.58333 0.0308,-503.375 -211.30208,-0.0833 -422.60417,-0.16667 -633.90625,-0.25 l 0.03125,0.59375 z"
        id="path3979-9"
        inkscape:connector-curvature="0"
-       inkscape:export-filename="/home/miha/Programiranje/Parse/nTasks/note.png"
-       inkscape:export-xdpi="9.0681572"
-       inkscape:export-ydpi="9.0681572" />
+       inkscape:export-filename="/home/miha/Programiranje/Parse/nTasks/Icons/drawable-xhdpi/note.png"
+       inkscape:export-xdpi="18.139999"
+       inkscape:export-ydpi="18.139999" />
   </g>
 </svg>

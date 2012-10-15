@@ -172,7 +172,7 @@ public class Utils {
 			e1.printStackTrace();
 		}
 		
-		Uri taskUri = ContentUris.withAppendedId(Uri.withAppendedPath(Database.BASE_URI, Database.TASK_TABLE_NAME), taskId);
+		Uri taskUri = Database.withId(Database.TASK_TABLE_NAME, taskId);
 
 		ContentValues values = new ContentValues();
 		values.put(Database.KEY_TASK_ACTIVE, 0);

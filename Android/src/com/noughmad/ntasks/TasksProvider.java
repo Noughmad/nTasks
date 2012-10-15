@@ -211,9 +211,15 @@ public class TasksProvider extends ContentProvider {
 				selectionArgs[n] = uri.getLastPathSegment();
 			}
 		}
+		
+		if (selectionArgs.length > 0) {
+			Log.d(TAG, selection + selectionArgs[0]);
+		}
+		
 		int count = db.getWritableDatabase().update(getTableName(uri), values, selection, selectionArgs);
+		Log.d(TAG, Integer.toString(count));
 		setLocal(uri);
-		getContext().getContentResolver().notifyChange(Uri.withAppendedPath(Database.BASE_URI, getTableName(uri)), null);
+		getContext().getContentResolver().notifyChange(Database.withTable(getTableName(uri)), null);
 		return count;
 	}
 
