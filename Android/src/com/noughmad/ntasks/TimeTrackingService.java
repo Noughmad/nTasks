@@ -60,7 +60,7 @@ public class TimeTrackingService extends IntentService {
 			builder.setSmallIcon(R.drawable.ic_notification);
 			
 			Intent notificationIntent = new Intent(this, ProjectDetailActivity.class);
-			intent.putExtra("projectId", project.getLong(0));
+			notificationIntent.putExtra("com.noughmad.ntasks.projectId", project.getLong(0));
 			PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 			builder.setContentIntent(pendingIntent);
 			
@@ -107,7 +107,7 @@ public class TimeTrackingService extends IntentService {
 				client.update(uri, values, null, null);
 				
 				client.release();
-				startForeground(Utils.TRACKING_NOTIFICATION, builder.getNotification());
+				startForeground(Utils.TRACKING_NOTIFICATION, builder.build());
 			}
 			
 		} catch (RemoteException e) {

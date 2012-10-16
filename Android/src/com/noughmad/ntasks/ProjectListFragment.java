@@ -38,8 +38,8 @@ public class ProjectListFragment extends ListFragment
 			notes.showProject(id);
 		} else {
 			Intent intent = new Intent(getActivity(), ProjectDetailActivity.class);
-			intent.putExtra("projectId", id);
-			startActivity(intent);
+			intent.putExtra("com.noughmad.ntasks.projectId", id);
+			startActivity(intent);					
 		}
 	}
 	

@@ -38,8 +38,9 @@ public class TaskListAdapter extends CursorAdapter {
 		final Uri taskUri = ContentUris.withAppendedId(Uri.withAppendedPath(Database.BASE_URI, Database.TASK_TABLE_NAME), taskId);
 		
 		Spinner spinner = (Spinner)view.findViewById(R.id.task_status);
+		spinner.setOnItemSelectedListener(null);
 		spinner.setSelection(cursor.getInt(2));
-		Log.d(TAG, "bitdView: " + cursor.getInt(2));
+		Log.d(TAG, "bindView: " + cursor.getInt(2));
 		spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 
 			public void onItemSelected(AdapterView<?> spinner, View item,

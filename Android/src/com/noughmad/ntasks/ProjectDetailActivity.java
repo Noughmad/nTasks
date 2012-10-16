@@ -117,7 +117,8 @@ public class ProjectDetailActivity extends Activity
 			return;
 		}
 		
-		mProjectId = getIntent().getLongExtra("projectId", -1);
+		mProjectId = getIntent().getLongExtra("com.noughmad.ntasks.projectId", -1);
+		Log.i(TAG, "Opening project " + mProjectId);
 		if (mProjectId < 0) {
 			finish();
 		}

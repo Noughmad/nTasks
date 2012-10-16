@@ -95,7 +95,15 @@ public class TaskListFragment extends ListFragment implements LoaderManager.Load
 
 	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
 		Uri uri = Database.withTable(Database.TASK_TABLE_NAME);
-		String[] columns = Database.taskColumns;
+		// Columns: _id, name, status, duration, active, lastStart
+		String[] columns = new String[] {
+				Database.ID,
+				Database.KEY_TASK_NAME,
+				Database.KEY_TASK_STATUS,
+				Database.KEY_TASK_DURATION,
+				Database.KEY_TASK_ACTIVE,
+				Database.KEY_TASK_LASTSTART
+		};
 		return new CursorLoader(getActivity(), uri, columns, Database.KEY_TASK_PROJECT + " = ?", new String[] {Long.toString(mProjectId)}, null);
 	}
 
