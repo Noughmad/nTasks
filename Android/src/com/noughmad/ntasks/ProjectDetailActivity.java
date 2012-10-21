@@ -8,6 +8,7 @@ import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.LoaderManager;
@@ -52,20 +53,25 @@ public class ProjectDetailActivity extends FragmentActivity
 		tabs.add(tasks);
 
 		TabData timeline = new TabData();
-		tasks.tag = "Timeline";
-		tasks.icon = android.R.drawable.ic_menu_recent_history;
-		tasks.fragmentClass = TimelineFragment.class;
+		timeline.tag = "Timeline";
+		timeline.icon = android.R.drawable.ic_menu_recent_history;
+		timeline.fragmentClass = TimelineFragment.class;
 		tabs.add(timeline);
 
 		TabData notes = new TabData();
-		tasks.tag = "Notes";
-		tasks.icon = android.R.drawable.ic_menu_edit;
-		tasks.fragmentClass = NotesFragment.class;
+		notes.tag = "Notes";
+		notes.icon = android.R.drawable.ic_menu_edit;
+		notes.fragmentClass = NotesFragment.class;
 		tabs.add(notes);
-
-		View view = ActionBarCompat.setNavigationTabs(this, tabs);
-		view.setId(R.id.project_detail_pager);
-		setContentView(view);
+		
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			View view = ActionBarCompat.setNavigationTabs(this, tabs);
+			view.setId(R.id.project_detail_pager);
+			setContentView(view);
+		} else {
+			setContentView(R.layout.fragment_tabs_pager);
+			ActionBarCompat.setNavigationTabs(this, tabs);
+		}
 				
 //		Debug.startMethodTracing("ntasks_detail_short");
 

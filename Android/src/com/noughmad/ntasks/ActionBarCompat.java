@@ -37,7 +37,7 @@ public class ActionBarCompat {
 			final ActionBar bar = activity.getActionBar();
 			
 			ViewPager pager = new ViewPager(activity);
-			TabsAdapter adapter = new TabsAdapter(activity, pager);
+			TabsAdapter adapter = new TabsAdapter((FragmentActivity)activity, pager);
 			pager.setAdapter(adapter);
 			
 			bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
@@ -86,8 +86,8 @@ public class ActionBarCompat {
 		    }
 		}
 		
-		public TabsAdapter(Activity activity, ViewPager pager) {
-		    super(activity.getFragmentManager());
+		public TabsAdapter(FragmentActivity activity, ViewPager pager) {
+		    super(activity.getSupportFragmentManager());
 		    mContext = activity;
 		    mActionBar = activity.getActionBar();
 		    mViewPager = pager;
@@ -110,9 +110,9 @@ public class ActionBarCompat {
 		}
 		
 		@Override
-		public Fragment getItem(int position) {
+		public android.support.v4.app.Fragment getItem(int position) {
 		    TabInfo info = mTabs.get(position);
-		    return Fragment.instantiate(mContext, info.clss.getName(), info.args);
+		    return android.support.v4.app.Fragment.instantiate(mContext, info.clss.getName(), info.args);
 		}
 		
 		public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
@@ -146,7 +146,8 @@ public class ActionBarCompat {
 	static class OldTabsCompatImpl {
 		static View setNavigationTabs(Activity activity, List<TabData> tabs) {
 			
-			TabHost host = new TabHost(activity);
+			TabHost host = (TabHost) activity.findViewById(android.R.id.tabhost);
+			host.setup();
 			ViewPager pager = new ViewPager(activity);
 			OldTabsAdapter adapter = new OldTabsAdapter((FragmentActivity)activity, host, pager);
 			
@@ -225,17 +226,14 @@ public class ActionBarCompat {
 		    return android.support.v4.app.Fragment.instantiate(mContext, info.clss.getName(), info.args);
 		}
 		
-		@Override
 		public void onTabChanged(String tabId) {
 		    int position = mTabHost.getCurrentTab();
 		    mViewPager.setCurrentItem(position);
 		}
 		
-		@Override
 		public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 		}
 		
-		@Override
 		public void onPageSelected(int position) {
 		    // Unfortunately when TabHost changes the current tab, it kindly
 		    // also takes care of putting focus on it when not in touch mode.
@@ -249,7 +247,6 @@ public class ActionBarCompat {
 		    widget.setDescendantFocusability(oldFocusability);
 		}
 		
-		@Override
 		public void onPageScrollStateChanged(int state) {
 		}
 	}
