@@ -1,10 +1,9 @@
 package com.noughmad.ntasks;
 
-import android.app.Fragment;
-import android.app.FragmentTransaction;
 import android.content.Intent;
-import android.content.res.Configuration;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Menu;
@@ -63,8 +62,8 @@ public class MainActivity extends IconGetterActivity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 		case R.id.menu_add_project:
-			FragmentTransaction ft = getFragmentManager().beginTransaction();
-		    Fragment prev = getFragmentManager().findFragmentByTag("project-dialog");
+			FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+		    Fragment prev = getSupportFragmentManager().findFragmentByTag("project-dialog");
 		    if (prev != null) {
 		        ft.remove(prev);
 		    }
@@ -76,15 +75,12 @@ public class MainActivity extends IconGetterActivity {
 		    break;
 		    
 		case R.id.menu_add_task:
-			ProjectListFragment fragment = (ProjectListFragment) getFragmentManager().findFragmentById(R.id.project_list);
+			ProjectListFragment fragment = (ProjectListFragment) getSupportFragmentManager().findFragmentById(R.id.project_list);
 			if (fragment == null) {
 				Log.w(TAG, "Could not find project list fragment");
 				return false;
 			}
 			ListView list = fragment.getListView();
-			if (list.getCheckedItemCount() == 0) {
-				return false;
-			}
 			long projectId = list.getItemIdAtPosition(list.getCheckedItemPosition());
 			if (projectId == ListView.INVALID_ROW_ID) {
 				Log.w(TAG, "Project list fragment has no selected projects " + fragment.getListView().getCount());

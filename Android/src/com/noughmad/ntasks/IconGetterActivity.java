@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentProviderClient;
 import android.content.ContentUris;
@@ -20,9 +19,10 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.RemoteException;
 import android.provider.MediaStore;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
-public class IconGetterActivity extends Activity {
+public class IconGetterActivity extends FragmentActivity {
 
 	static final int REQUEST_CAMERA = 10;
 	static final int REQUEST_GALLERY = 11;

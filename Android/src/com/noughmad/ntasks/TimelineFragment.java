@@ -1,22 +1,17 @@
 package com.noughmad.ntasks;
 
-import java.util.ArrayList;
-
-import android.app.ListFragment;
-import android.app.LoaderManager;
 import android.content.ContentUris;
-import android.content.CursorLoader;
-import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.ListFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v4.widget.CursorAdapter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CursorAdapter;
-import android.widget.HeaderViewListAdapter;
-import android.widget.ListView;
-import android.widget.ListView.FixedViewInfo;
 import android.widget.TextView;
 
 import com.noughmad.ntasks.tasks.TimelineAdapter;
@@ -63,17 +58,11 @@ public class TimelineFragment extends ListFragment
 		
 		setListShown(false);
 		
-		ListView.FixedViewInfo header = getListView().new FixedViewInfo();
-		header.data = null;
-		header.isSelectable = false;
 		TextView edit = new TextView(getActivity());
-		edit.setText("Recent actions");
-		header.view = edit;
+		edit.setText("Recent actions");	
+		getListView().addHeaderView(edit);
 		
-		ArrayList<FixedViewInfo> headers = new ArrayList<FixedViewInfo>();
-		headers.add(header);
-		HeaderViewListAdapter adapter = new HeaderViewListAdapter(headers, null, new TimelineAdapter(getActivity(), null));
-		setListAdapter(adapter);
+		setListAdapter(new TimelineAdapter(getActivity(), null));
 		
 		getLoaderManager().initLoader(0, null, this);
 	}
@@ -90,7 +79,7 @@ public class TimelineFragment extends ListFragment
 	}
 
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-		((CursorAdapter)((HeaderViewListAdapter)getListAdapter()).getWrappedAdapter()).swapCursor(cursor);		
+		((CursorAdapter)getListAdapter()).changeCursor(cursor);		
 		
 		if (isResumed()) {
 			setListShown(true);
@@ -100,7 +89,7 @@ public class TimelineFragment extends ListFragment
 	}
 
 	public void onLoaderReset(Loader<Cursor> loader) {
-		((CursorAdapter)((HeaderViewListAdapter)getListAdapter()).getWrappedAdapter()).swapCursor(null);		
+		((CursorAdapter)getListAdapter()).changeCursor(null);		
 	}
 
 	public void showProject(long id) {

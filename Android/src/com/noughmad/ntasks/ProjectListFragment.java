@@ -1,19 +1,19 @@
 package com.noughmad.ntasks;
 
 import android.app.AlertDialog;
-import android.app.FragmentTransaction;
-import android.app.ListFragment;
-import android.app.LoaderManager;
 import android.content.ContentProviderClient;
 import android.content.ContentUris;
-import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.ListFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,6 +21,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.ListView;
+
 
 public class ProjectListFragment extends ListFragment
 	implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -143,11 +144,11 @@ public class ProjectListFragment extends ListFragment
 			selected = 0;
 		}
 		Log.i("ProjectListFragment", "Loaded " + cursor.getCount() + " projects");
-		mAdapter.swapCursor(cursor);
+		mAdapter.changeCursor(cursor);
 		getListView().setItemChecked(selected, true);
 	}
 
 	public void onLoaderReset(Loader<Cursor> loader) {
-		mAdapter.swapCursor(null);
+		mAdapter.changeCursor(null);
 	}
 }

@@ -14,7 +14,7 @@ import android.widget.TextView;
 public class ProjectListAdapter extends CursorAdapter {
 
 	public ProjectListAdapter(Context context, Cursor c) {
-		super(context, c, 0);
+		super(context, c, false);
 	}
 
 	@Override

@@ -27,7 +27,7 @@ public class TaskListAdapter extends CursorAdapter {
 	private final static String TAG = "TaskListAdapter";
 
 	public TaskListAdapter(Context context, Cursor c) {
-		super(context, c, 0);
+		super(context, c, false);
 	}
 
 	@Override

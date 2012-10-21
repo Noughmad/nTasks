@@ -1,20 +1,20 @@
 package com.noughmad.ntasks;
 
 import android.app.AlertDialog;
-import android.app.ListFragment;
-import android.app.LoaderManager;
 import android.content.ContentProviderClient;
-import android.content.CursorLoader;
 import android.content.DialogInterface;
-import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.RemoteException;
+import android.support.v4.app.ListFragment;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v4.widget.CursorAdapter;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.CursorAdapter;
 
 import com.noughmad.ntasks.tasks.TaskListAdapter;
 
@@ -108,7 +108,7 @@ public class TaskListFragment extends ListFragment implements LoaderManager.Load
 	}
 
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
-		((CursorAdapter)getListAdapter()).swapCursor(cursor);		
+		((CursorAdapter)getListAdapter()).changeCursor(cursor);		
 		
 		if (isResumed()) {
 			setListShown(true);
@@ -118,6 +118,6 @@ public class TaskListFragment extends ListFragment implements LoaderManager.Load
 	}
 
 	public void onLoaderReset(Loader<Cursor> loader) {
-		((CursorAdapter)getListAdapter()).swapCursor(null);		
+		((CursorAdapter)getListAdapter()).changeCursor(null);		
 	}
 }

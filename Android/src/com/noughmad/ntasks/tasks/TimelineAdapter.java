@@ -13,7 +13,7 @@ import android.widget.TextView;
 public class TimelineAdapter extends CursorAdapter {
 
 	public TimelineAdapter(Context context, Cursor c) {
-		super(context, c, 0);
+		super(context, c, false);
 	}
 
 	@Override
@@ -25,7 +25,6 @@ public class TimelineAdapter extends CursorAdapter {
 	@Override
 	public View newView(Context context, Cursor cursor, ViewGroup parent) {
 		View view = ((LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)).inflate(android.R.layout.two_line_list_item, parent, false);
-		bindView(view, context, cursor);
 		return view;
 	}
 }

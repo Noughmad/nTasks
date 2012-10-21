@@ -1,112 +1,32 @@
 package com.noughmad.ntasks;
 
 import java.util.ArrayList;
+import java.util.List;
 
-import android.app.ActionBar;
-import android.app.ActionBar.Tab;
-import android.app.Activity;
-import android.app.Fragment;
-import android.app.FragmentTransaction;
-import android.app.LoaderManager;
+import android.annotation.TargetApi;
 import android.content.ContentUris;
-import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Intent;
-import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v13.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 
-public class ProjectDetailActivity extends Activity
+import com.noughmad.ntasks.ActionBarCompat.TabData;
+
+public class ProjectDetailActivity extends FragmentActivity
 		implements LoaderManager.LoaderCallbacks<Cursor>
 	{
 
 	private long mProjectId;
 	private static final String TAG = "ProjectDetailActivity";
-	
-	public static class TabsAdapter extends FragmentPagerAdapter
-    	implements ActionBar.TabListener, ViewPager.OnPageChangeListener {
-		
-		private final Context mContext;
-		private final ActionBar mActionBar;
-		private final ViewPager mViewPager;
-		private final ArrayList<TabInfo> mTabs = new ArrayList<TabInfo>();
-		
-		static final class TabInfo {
-		    private final Class<?> clss;
-		    private final Bundle args;
-		
-		    TabInfo(Class<?> _class, Bundle _args) {
-		        clss = _class;
-		        args = _args;
-		    }
-		}
-		
-		public TabsAdapter(Activity activity, ViewPager pager) {
-		    super(activity.getFragmentManager());
-		    mContext = activity;
-		    mActionBar = activity.getActionBar();
-		    mViewPager = pager;
-		    mViewPager.setAdapter(this);
-		    mViewPager.setOnPageChangeListener(this);
-		}
-		
-		public void addTab(ActionBar.Tab tab, Class<?> clss, Bundle args) {
-		    TabInfo info = new TabInfo(clss, args);
-		    tab.setTag(info);
-		    tab.setTabListener(this);
-		    mTabs.add(info);
-		    mActionBar.addTab(tab);
-		    notifyDataSetChanged();
-		}
-		
-		@Override
-		public int getCount() {
-		    return mTabs.size();
-		}
-		
-		@Override
-		public Fragment getItem(int position) {
-		    TabInfo info = mTabs.get(position);
-		    return Fragment.instantiate(mContext, info.clss.getName(), info.args);
-		}
-		
-		public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-		}
-		
-		public void onPageSelected(int position) {
-		    mActionBar.setSelectedNavigationItem(position);
-		}
-		
-		public void onPageScrollStateChanged(int state) {
-		}
-		
-		public void onTabSelected(Tab tab, FragmentTransaction ft) {
-		    Object tag = tab.getTag();
-		    for (int i=0; i<mTabs.size(); i++) {
-		        if (mTabs.get(i) == tag) {
-		            mViewPager.setCurrentItem(i);
-		        }
-		    }
-		}
-		
-		public void onTabUnselected(Tab tab, FragmentTransaction ft) {
-			
-		}
-		
-		public void onTabReselected(Tab tab, FragmentTransaction ft) {
-			
-		}
-	}
-
-	ViewPager mPager;
-	TabsAdapter mTabsAdapter;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -123,36 +43,44 @@ public class ProjectDetailActivity extends Activity
 			finish();
 		}
 		
-		mPager = new ViewPager(this);
-		mPager.setId(R.id.project_detail_pager);
-		setContentView(mPager);
+		List<TabData> tabs = new ArrayList<TabData>();
 		
-		mTabsAdapter = new TabsAdapter(this, mPager);
-		
-//		Debug.startMethodTracing("ntasks_detail_short");
-				
-		final ActionBar bar = getActionBar();
-		
-		bar.setDisplayHomeAsUpEnabled(true);
-		bar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+		TabData tasks = new TabData();
+		tasks.tag = "Tasks";
+		tasks.icon = R.drawable.ic_menu_task_add;
+		tasks.fragmentClass = TaskListFragment.class;
+		tabs.add(tasks);
 
-		Bundle args = new Bundle();
-		args.putLong("projectId", mProjectId);
-		mTabsAdapter.addTab(bar.newTab().setIcon(R.drawable.ic_menu_task_add), TaskListFragment.class, args);
-		mTabsAdapter.addTab(bar.newTab().setIcon(android.R.drawable.ic_menu_recent_history), TimelineFragment.class, args);
-		mTabsAdapter.addTab(bar.newTab().setIcon(android.R.drawable.ic_menu_edit), NotesFragment.class, args);
-		
+		TabData timeline = new TabData();
+		tasks.tag = "Timeline";
+		tasks.icon = android.R.drawable.ic_menu_recent_history;
+		tasks.fragmentClass = TimelineFragment.class;
+		tabs.add(timeline);
+
+		TabData notes = new TabData();
+		tasks.tag = "Notes";
+		tasks.icon = android.R.drawable.ic_menu_edit;
+		tasks.fragmentClass = NotesFragment.class;
+		tabs.add(notes);
+
+		View view = ActionBarCompat.setNavigationTabs(this, tabs);
+		view.setId(R.id.project_detail_pager);
+		setContentView(view);
+				
+//		Debug.startMethodTracing("ntasks_detail_short");
+
 		if (savedInstanceState != null) {
-            bar.setSelectedNavigationItem(savedInstanceState.getInt("tab", 0));
+			ActionBarCompat.setSelectedNavigationItem(this, savedInstanceState.getInt("tab", 0));
         }
 		
-		getLoaderManager().initLoader(0, null, this);
+		getSupportLoaderManager().initLoader(0, null, this);
 	}
 	
+	@TargetApi(11)
 	@Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt("tab", getActionBar().getSelectedNavigationIndex());
+        ActionBarCompat.saveSelectedNavigationIndex(this, outState, "tab");
     }
 
 	@Override
@@ -185,14 +113,14 @@ public class ProjectDetailActivity extends Activity
 	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
 		Log.i(TAG, "onLoadFinished()");
 		if (cursor.moveToFirst()) {
-			getActionBar().setTitle(cursor.getString(0));
+			setTitle(cursor.getString(0));
 		} else {
-			getActionBar().setTitle(R.string.app_name);
+			setTitle(R.string.app_name);
 			finish();
 		}
 	}
 
 	public void onLoaderReset(Loader<Cursor> loader) {
-		getActionBar().setTitle(R.string.app_name);
+		setTitle(R.string.app_name);
 	}
 }
